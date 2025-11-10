@@ -2,8 +2,8 @@
 import os
 import pandas as pd
 
-from defaults import SPECTRALDB_ABS_PATH, RAW_LINES_PATH
-from utils.types import Element, InvalidElementError
+from src.defaults import SPECTRALDB_ABS_PATH, RAW_LINES_PATH
+from src.utils.types import Element, InvalidElementError
 from typing import Optional, Union, get_args
 
 def system_agnostic_pathjoin(path:Union[str,list], root:Optional[Union[str,list]]=None):
@@ -18,7 +18,7 @@ def system_agnostic_pathjoin(path:Union[str,list], root:Optional[Union[str,list]
     return os.path.sep.join(root + path)
 
 def process_element_abbreviation(abbr:str) -> str:
-    return abbr.lower().capitalize()
+    return abbr.lower().capitalize()[:min(2, len(abbr))]
 
 
 def load_element(el:Element, suffix:str=".csv") -> pd.DataFrame:
