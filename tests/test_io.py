@@ -32,31 +32,46 @@ class TestIO(ut.TestCase):
         return  list(map(TestTuple.make, tests))
 
 
+
     def test_element_abbreviation(self):
         tests = self._element_abbreviation_conditions()
-        print(f"Test list: {tests}")
-
         def _subtest(name:str, inputs:TestInputs, outputs:Optional[TestOutputs]=None, callable:Optional[Callable]=io.process_element_abbreviation):
-            if callable is None:
-                callable = lambda *args, **kwargs: f"Callable\n\tArgs: {args}\n\tKwargs: {kwargs}"
-
-            print(f"Subtest: {name}")
-            print(f"Inputs: {inputs}")
             args, kwargs = inputs.to_params()
             with self.subTest(name):
                 outs = callable(*args, **kwargs)
-                print(f"Outputs: {outs}")
                 self.assertEqual(outs, outputs.outputs)
-                print(f"[SUCCESS] {name}")
-                return outputs
-
-            print(f"[FAIL] {name}")
+                return f"[SUCCESS] {name}"
+            return(f"[FAIL] {name}")
 
         subtest_lambda = lambda test_tuple: _subtest(**test_tuple._asdict())
         self.res = list(map(subtest_lambda, tests))
-
-        logger.debug(f"result: {self.res}")
+        print(f"Element Abbreviation Result: {self.res}")
     
+    def _load_element_conditions(self) -> list[TestTuple]:
+        """ Just checking running this doesn't throw error """
+        tests = [
+            {"name":"Test expected", "inputs":{"args":("He",)}},         
+            {"name":"Test long", "inputs":{"args":("HE",)}},
+            {"name":"Test lower", "inputs":{"args":("he",)}},      
+        ]        
+        
+        return  list(map(TestTuple.make, tests))
+
+    def test_load_element(self):
+        tests = self._load_element_conditions()
+
+        def _subtest(name:str, inputs:TestInputs, outputs:Optional[TestOutputs]=None, callable:Optional[Callable]=io.process_element_abbreviation):
+            args, kwargs = inputs.to_params()
+            with self.subTest(name):
+                outs = callable(*args, **kwargs)
+                # So long as not error, success
+                return f"[SUCCESS] {name}"
+            return(f"[FAIL] {name}")
+
+        subtest_lambda = lambda test_tuple: _subtest(**test_tuple._asdict())
+        self.res = list(map(subtest_lambda, tests))
+        print(f"Load Element Result: {self.res}")
+
 
 
 if __name__ == '__main__':

@@ -2,8 +2,8 @@
 import os
 import pandas as pd
 
-from src.defaults import SPECTRALDB_ABS_PATH, RAW_LINES_PATH
-from src.utils.types import Element, InvalidElementError
+from .defaults import RAW_LINES_PATH, ELEMENTS
+from .types import Element, InvalidElementError
 from typing import Optional, Union, get_args
 
 def system_agnostic_pathjoin(path:Union[str,list], root:Optional[Union[str,list]]=None):
@@ -26,12 +26,12 @@ def load_element(el:Element, suffix:str=".csv") -> pd.DataFrame:
     Takes an element Abbreviation and loads the data from disk.
     """
     el = process_element_abbreviation(el)
-    if el not in get_args(Element):
-        raise InvalidElementError(f"{el} is not a recongized element. Currently accepted elements are: {get_args(Element)}")
+    if el not in ELEMENTS:
+        raise InvalidElementError(f"{el} is not a recongized element. Currently accepted elements are: {ELEMENTS}")
 
     df = None
     try:
-        df = pd.read_csv(system_agnostic_pathjoin([el+suffix], root=SPECTRALDB_ABS_PATH))
+        df = pd.read_csv(system_agnostic_pathjoin([el+suffix], root=RAW_LINES_PATH))
     except Exception as e:
         raise e(f"Unable to load data for element: {el}")
 

@@ -2,7 +2,7 @@ import logging
 logger = logging.getLogger()
 import unittest as ut
 
-from src.defaults import UNITTEST_SETUP_STRING
+from src.utils.defaults import UNITTEST_SETUP_STRING
 from src.utils.types import TestTuple, TestInputs, TestOutputs
 
 from warnings import filterwarnings
