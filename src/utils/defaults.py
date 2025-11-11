@@ -1,7 +1,8 @@
 import os
 
-SPECTRALDB_ABS_PATH = os.path.sep.join(os.path.abspath("defaults.py").split(os.path.sep)[:-2])
-RAW_LINES_PATH = os.path.sep.join([SPECTRALDB_ABS_PATH,"data", "raw", "lines","wavelength"])
+THIS_DIR = os.path.dirname(__file__)
+SPECTRALDB_ABS_PATH = os.path.sep.join(THIS_DIR.split(os.path.sep)[:-2])
+RAW_LINES_PATH = os.path.sep.join([SPECTRALDB_ABS_PATH, "data", "raw", "lines","wavelength"])
 
 UNITTEST_SETUP_STRING = """\n .----------------.  .----------------.  .----------------.  .----------------.  .----------------.  .-----------------. .----------------.   
 | .--------------. || .--------------. || .--------------. || .--------------. || .--------------. || .--------------. || .--------------. |  

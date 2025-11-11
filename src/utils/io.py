@@ -8,7 +8,7 @@ from typing import Optional, Union
 
 def system_agnostic_pathjoin(path:Union[str,list], root:Optional[Union[str,list]]=None):
     if root is None:
-        root = os.getcwd().split(os.path.sep)
+        root = os.path.dirname(__file__).split(os.path.sep)[:-2]
     if isinstance(root, str):
         root = root.split(os.path.sep)
 
@@ -17,10 +17,15 @@ def system_agnostic_pathjoin(path:Union[str,list], root:Optional[Union[str,list]
 
     return os.path.sep.join(root + path)
 
+def lwrcap(s:str):
+    """lower case then capitalize input"""
+    return s.lower().capitalize()
+
 def process_element_abbreviation(abbr:str) -> str:
+    abbr = lwrcap(abbr)
     if abbr in ELEMENTS_R:
         return ELEMENTS_R[abbr]
-    return abbr.lower().capitalize()[:min(2, len(abbr))]
+    return abbr[:min(2, len(abbr))]
 
 
 def load_element(el:Element, suffix:str=".csv") -> pd.DataFrame:

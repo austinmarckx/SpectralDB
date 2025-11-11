@@ -24,13 +24,12 @@ class TestIO(ut.TestCase):
         """ Get the test tuples """
         tests = [
             {"name":"Test expected", "inputs":{"args":("He",)}, "outputs":"He"},         
-            {"name":"Test long", "inputs":{"args":("Helium",)}, "outputs":"He"},
-            {"name":"Test caps", "inputs":{"args":("HELIUM",)}, "outputs":"He"},
+            {"name":"Test long", "inputs":{"args":("Lead",)}, "outputs":"Pb"},
+            {"name":"Test caps", "inputs":{"args":("HE",)}, "outputs":"He"},
             {"name":"Test lower", "inputs":{"args":("he",)}, "outputs":"He"},      
         ]        
         
         return  list(map(TestTuple.make, tests))
-
 
 
     def test_element_abbreviation(self):
@@ -60,7 +59,7 @@ class TestIO(ut.TestCase):
     def test_load_element(self):
         tests = self._load_element_conditions()
 
-        def _subtest(name:str, inputs:TestInputs, outputs:Optional[TestOutputs]=None, callable:Optional[Callable]=io.process_element_abbreviation):
+        def _subtest(name:str, inputs:TestInputs, outputs:Optional[TestOutputs]=None, callable:Optional[Callable]=io.load_element):
             args, kwargs = inputs.to_params()
             with self.subTest(name):
                 outs = callable(*args, **kwargs)

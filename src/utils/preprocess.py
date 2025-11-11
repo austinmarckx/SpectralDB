@@ -66,19 +66,28 @@ Descriptors to the relative intensities have the following meaning:
 import numpy as np
 import pandas as pd
 from typing import Optional
-from utils.types import Element
-from utils.io import load_element
+from .types import Element
+from .io import load_element
 
 COLUMN_MAP = {
     "element":"element",
     "sp_num":"spectrum_number",
-    "obs_wl_vac(nm)":"wavelength",
+    "obs_wl_vac(nm)":"wavelength_nm",
     "intens_value":"intensity",
     "log_intens":"log10_intensity",
     "intens_tags":"tags"
 }
 
-def preprocess(el:Element) -> pd.DataFrame:
+COLUMN_TYPES = {
+    "element":str,
+    "spectrum_number":int,
+    "wavelength_nm":float,
+    "intensity":float,
+    "log10_intensity":float,
+    "tags":str
+}
+
+def preprocess(el:Element, trimmed:bool=False) -> pd.DataFrame:
     df = None
     try:
         # 1) Load data
@@ -101,10 +110,20 @@ def preprocess(el:Element) -> pd.DataFrame:
     # 5) Relative intensity flag parsing
     ## Relative intensity digit:
     tmp = df['intens'].str.split(r"^(\d+)", expand=True)
-    df['intens_value'] = tmp[1]
-    df['log_intens'] = df['intens_value'].astype(float).apply(np.log10)
-    df['intens_tags'] = tmp[0] + tmp[2]
+    ## Most Elements will have 3 columns, however, some of the larger elements don't have data there.
+    ## Use shape of df as check. o/w just leave the None place holders.
+    df["intens_value"] = None
+    df["log_intens"] = None
+    df["intens_tags"] = None
 
+    if tmp.shape[1] > 1:
+        df['intens_value'] = tmp[1]
+        df['log_intens'] = df['intens_value'].astype(float).apply(np.log10)
+    if tmp.shape[1] > 2:
+        df['intens_tags'] = tmp[0] + tmp[2]
+
+    if trimmed:
+        return trim(df)
     return df
     
 def cell_parser(value):
@@ -120,7 +139,28 @@ def drop_intermediate_tables(df:pd.DataFrame) -> pd.DataFrame:
     """
     return df[df['line_ref'] != "line_ref"]
 
-def _subset(df:pd.DataFrame, mapping:Optional[dict[str,str]]=None) -> pd.DataFrame:
+def trim(df:pd.DataFrame) -> pd.DataFrame:
+    """ Subset and """
+    df = _subset_rename(df)
+    df = df.dropna(subset=["wavelength_nm","intensity","log10_intensity"])
+    df = _type_conversion(df)    
+    return df
+
+
+def _type_conversion(df:pd.DataFrame, mapping:Optional[dict[str,str]]=None) -> pd.DataFrame:
+    if mapping is None:
+        mapping = COLUMN_TYPES
+    
+    for col, ty in mapping.items():
+        try:
+            df[col] = [val if val != '' else None for val in df[col]]
+            df[col] = df[col].astype(ty)
+        except Exception as e:
+            print(f"Unable to convert `{col}` with exception: `{e}`")
+
+    return df
+
+def _subset_rename(df:pd.DataFrame, mapping:Optional[dict[str,str]]=None) -> pd.DataFrame:
     if mapping is None:
         mapping = COLUMN_MAP
     return df[list(mapping.keys())].rename(columns=mapping)
