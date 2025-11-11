@@ -26,11 +26,57 @@ Notes:
     D+	≤	40%
     D	≤	50%
     E	>	50%.
+
+Relative intensity tags:
+
+Descriptors to the relative intensities have the following meaning:
+
+     *    Intensity is shared by several lines (typically, for multiply classified lines).
+     :    Observed value given is actually the rounded Ritz value, e.g., Ar IV, λ = 443.40 Å.
+     -    Somewhat lower intensity than the value given.
+     a    Observed in absorption.
+     b    Band head.
+     bl   Blended with another line that may affect the wavelength and intensity.
+     B    Line or feature having large width due to autoionization broadening.
+     c    Complex line.
+     d    Diffuse line.
+     D    Double line.
+     E    Broad due to overexposure in the quoted reference
+     f    Forbidden line.
+     g    Transition involving a level of the ground term.
+     G    Line position roughly estimated.
+     H    Very hazy line.
+     h    Hazy line (same as "diffuse").
+     hfs  Line has hyperfine structure.
+     i    Identification uncertain.
+     j    Wavelength smoothed along isoelectronic sequence.
+     l    Shaded to longer wavelengths; NB: This may look like a "one" at the end
+          of the number!
+     m    Masked by another line (no wavelength measurement).
+     p    Perturbed by a close line. Both wavelength and intensity may be affected.
+     q    Asymmetric line.
+     r    Easily reversed line.
+     s    Shaded to shorter wavelengths.
+     t    Tentatively classified line.
+     u    Unresolved from a close line.
+     w    Wide line.
+     x    Extrapolated wavelength
+
 """
 import numpy as np
 import pandas as pd
+from typing import Optional
 from utils.types import Element
 from utils.io import load_element
+
+COLUMN_MAP = {
+    "element":"element",
+    "sp_num":"spectrum_number",
+    "obs_wl_vac(nm)":"wavelength",
+    "intens_value":"intensity",
+    "log_intens":"log10_intensity",
+    "intens_tags":"tags"
+}
 
 def preprocess(el:Element) -> pd.DataFrame:
     df = None
@@ -58,6 +104,7 @@ def preprocess(el:Element) -> pd.DataFrame:
     df['intens_value'] = tmp[1]
     df['log_intens'] = df['intens_value'].astype(float).apply(np.log10)
     df['intens_tags'] = tmp[0] + tmp[2]
+
     return df
     
 def cell_parser(value):
@@ -72,3 +119,9 @@ def drop_intermediate_tables(df:pd.DataFrame) -> pd.DataFrame:
     Drop these rows.
     """
     return df[df['line_ref'] != "line_ref"]
+
+def _subset(df:pd.DataFrame, mapping:Optional[dict[str,str]]=None) -> pd.DataFrame:
+    if mapping is None:
+        mapping = COLUMN_MAP
+    return df[list(mapping.keys())].rename(columns=mapping)
+    

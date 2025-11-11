@@ -2,7 +2,7 @@
 import os
 import pandas as pd
 
-from .defaults import RAW_LINES_PATH, ELEMENTS
+from .defaults import RAW_LINES_PATH, ELEMENTS, ELEMENTS_R
 from .types import Element, InvalidElementError
 from typing import Optional, Union
 
@@ -18,6 +18,8 @@ def system_agnostic_pathjoin(path:Union[str,list], root:Optional[Union[str,list]
     return os.path.sep.join(root + path)
 
 def process_element_abbreviation(abbr:str) -> str:
+    if abbr in ELEMENTS_R:
+        return ELEMENTS_R[abbr]
     return abbr.lower().capitalize()[:min(2, len(abbr))]
 
 
