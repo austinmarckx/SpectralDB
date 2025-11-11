@@ -32,6 +32,8 @@ def load_element(el:Element, suffix:str=".csv") -> pd.DataFrame:
     df = None
     try:
         df = pd.read_csv(system_agnostic_pathjoin([el+suffix], root=RAW_LINES_PATH))
+        # Raw data has extra column, by default. Drop it.
+        df = df.iloc[:,:-1]
     except Exception as e:
         raise e(f"Unable to load data for element: {el}")
 
