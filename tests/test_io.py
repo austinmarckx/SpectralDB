@@ -34,10 +34,12 @@ class TestIO(ut.TestCase):
 
     def test_element_abbreviation(self):
         tests = self._element_abbreviation_conditions()
-        def _subtest(name:str, inputs:TestInputs, outputs:Optional[TestOutputs]=None, callable:Optional[Callable]=io.process_element_abbreviation):
+        def _subtest(name:str, inputs:TestInputs, outputs:Optional[TestOutputs]=None, func:Optional[Callable]=None):
+            if func is None:
+                func = io.process_element_abbreviation 
             args, kwargs = inputs.to_params()
             with self.subTest(name):
-                outs = callable(*args, **kwargs)
+                outs = func(*args, **kwargs)
                 self.assertEqual(outs, outputs.outputs)
                 return f"[SUCCESS] {name}"
             return(f"[FAIL] {name}")
@@ -59,10 +61,12 @@ class TestIO(ut.TestCase):
     def test_load_element(self):
         tests = self._load_element_conditions()
 
-        def _subtest(name:str, inputs:TestInputs, outputs:Optional[TestOutputs]=None, callable:Optional[Callable]=io.load_element):
+        def _subtest(name:str, inputs:TestInputs, outputs:Optional[TestOutputs]=None, func:Optional[Callable]=None):
+            if func is None:
+                func = io.load_element 
             args, kwargs = inputs.to_params()
             with self.subTest(name):
-                outs = callable(*args, **kwargs)
+                outs = func(*args, **kwargs)
                 # So long as not error, success
                 return f"[SUCCESS] {name}"
             return(f"[FAIL] {name}")

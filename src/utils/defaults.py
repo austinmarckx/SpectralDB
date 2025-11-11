@@ -1,5 +1,6 @@
 import os
 
+LRU_CACHE_SIZE = 512
 THIS_DIR = os.path.dirname(__file__)
 SPECTRALDB_ABS_PATH = os.path.sep.join(THIS_DIR.split(os.path.sep)[:-2])
 RAW_LINES_PATH = os.path.sep.join([SPECTRALDB_ABS_PATH, "data", "raw", "lines","wavelength"])

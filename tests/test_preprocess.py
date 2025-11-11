@@ -28,10 +28,12 @@ class TestPreprocess(ut.TestCase):
 
     def test_preprocessing(self):
         tests = self._preprocessing_conditions()
-        def _subtest(name:str, inputs:TestInputs, outputs:Optional[TestOutputs]=None, callable:Optional[Callable]=pp.preprocess):
+        def _subtest(name:str, inputs:TestInputs, outputs:Optional[TestOutputs]=None, func:Optional[Callable]=None):
+            if func is None:
+                func = pp.preprocess
             args, kwargs = inputs.to_params()
             with self.subTest(name):
-                outs = callable(*args, **kwargs)
+                outs = func(*args, **kwargs)
                 # So long as not error, success
                 return f"[SUCCESS] {name}"
             return(f"[FAIL] {name}")

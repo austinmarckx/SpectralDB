@@ -4,7 +4,7 @@ import unittest as ut
 
 from src.utils.defaults import UNITTEST_SETUP_STRING
 from src.utils.types import TestTuple, TestInputs, TestOutputs
-
+from src.utils.misc import nothing_burger
 from warnings import filterwarnings
 from typing import Optional, Callable
 
@@ -36,15 +36,15 @@ class TestTest(ut.TestCase):
         tests = self._conditions()
         print(f"Test list: {tests}")
 
-        def _subtest(name:str, inputs:TestInputs, outputs:Optional[TestOutputs]=None, callable:Optional[Callable]=None):
-            if callable is None:
-                callable = lambda *args, **kwargs: f"Callable\n\tArgs: {args}\n\tKwargs: {kwargs}"
+        def _subtest(name:str, inputs:TestInputs, outputs:Optional[TestOutputs]=None, func:Optional[Callable]=None):
+            if func is None:
+                func = nothing_burger
 
             print(f"Subtest: {name}")
             print(f"Inputs: {inputs}")
             args, kwargs = inputs.to_params()
             with self.subTest(name):
-                outs = callable(*args, **kwargs)
+                outs = func(*args, **kwargs)
                 print(f"Outputs: {outs}")
                 
                 print(f"[SUCCESS] {name}")
