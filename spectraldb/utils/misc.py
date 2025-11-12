@@ -3,6 +3,13 @@ import pandas as pd
 from typing import Union
 from spectraldb.utils.types import Wavelength
 
+def minmaxnorm(ls:list[float]) -> float:
+    """ Normalize list entries between 0 and 1 """
+    mn, mx = min(ls), max(ls)
+    func = lambda val: (val - mn) / (mx-mn)
+    return list(map(func, ls))
+
+
 def nothing_burger(*args, **kwargs):
     """Prints args and kwargs. Intended as placeholder for callables"""
     func = lambda *args, **kwargs: f"Callable\n\tArgs: {args}\n\tKwargs: {kwargs}"

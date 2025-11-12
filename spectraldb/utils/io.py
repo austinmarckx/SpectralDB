@@ -3,8 +3,23 @@ import os
 import pandas as pd
 
 from spectraldb.utils.defaults import RAW_LINES_PATH, ELEMENTS, ELEMENTS_R
-from spectraldb.utils.types import Element, InvalidElementError
-from typing import Optional, Union
+from spectraldb.utils.types import Element, InvalidElementError, CIEReference
+from typing import Optional, Union, Literal
+
+def load_cie_reference(ref:Literal["1931", "2006"]="2006", deg:Literal["2","10"]="2", refdeg:Optional[CIEReference]=None):
+    if refdeg is not None:
+        ref, deg = refdeg.split("_deg")
+
+    df = None
+    if ref == "1931" and deg == "2":
+        df = pd.read_csv("data\\CIE\\CIE_xyz_1931_2deg.csv", header=None, names=["wavelength_nm","x","y","z"])
+    elif ref == "2006" and deg == "2":
+        df = pd.read_csv("data\\CIE\\lin2012xyz2e_fine_7sf.csv", header=None, names=["wavelength_nm","x","y","z"])
+    elif ref == "2006" and deg == "10":
+        df = pd.read_csv("data\\CIE\\lin2012xyz10e_fine_7sf.csv", header=None, names=["wavelength_nm","x","y","z"])
+    else:
+        raise ValueError("Invalid ref/deg combination")
+    return df
 
 def demo_data() -> pd.DataFrame:
     df = pd.read_csv("data\\demo\\argon_demo.csv", index_col=0)

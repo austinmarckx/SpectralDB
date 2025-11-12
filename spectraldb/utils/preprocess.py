@@ -69,6 +69,7 @@ from typing import Optional
 
 from spectraldb.utils.types import Element
 from spectraldb.utils.io import load_element
+from spectraldb.models import wss
 
 COLUMN_MAP = {
     "element":"element",
@@ -88,7 +89,7 @@ COLUMN_TYPES = {
     "tags":str
 }
 
-def preprocess(el:Element, trimmed:bool=False) -> pd.DataFrame:
+def preprocess(el:Element, trimmed:bool=False, xyz:bool=False) -> pd.DataFrame:
     df = None
     try:
         # 1) Load data
@@ -124,7 +125,9 @@ def preprocess(el:Element, trimmed:bool=False) -> pd.DataFrame:
         df['intens_tags'] = tmp[0] + tmp[2]
 
     if trimmed:
-        return trim(df)
+        df = trim(df)
+    if xyz:
+        df["XYZ"] = list(map(wss.WSS.fit, df["wavelength_nm"]))
     return df
     
 def cell_parser(value):
@@ -140,7 +143,7 @@ def drop_intermediate_tables(df:pd.DataFrame) -> pd.DataFrame:
     """
     return df[df['line_ref'] != "line_ref"]
 
-def _visibility_bool(df:pd.DataFrame, col:str='wavelength_nm', minval:float=300, maxval:float=800) -> pd.DataFrame:
+def _visibility_bool(df:pd.DataFrame, col:str='wavelength_nm', minval:float=390, maxval:float=830) -> pd.DataFrame:
     df["visible"] = (df[col] >= minval) & (df[col] <= maxval)
     return df
 
@@ -152,9 +155,9 @@ def trim(df:pd.DataFrame) -> pd.DataFrame:
     df = _visibility_bool(df)
     return df
 
-def filter_visible(df:pd.DataFrame) -> pd.DataFrame:
+def filter_visible(df:pd.DataFrame, on:str='wavelength_nm') -> pd.DataFrame:
     if "visible" not in df.columns:
-        df = _visibility_bool(df)
+        df = _visibility_bool(df, col=on)
     return df[df['visible'] == True]
 
 def _type_conversion(df:pd.DataFrame, mapping:Optional[dict[str,str]]=None) -> pd.DataFrame:
