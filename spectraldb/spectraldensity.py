@@ -3,6 +3,8 @@ import plotly.express as px
 import plotly.graph_objects as go
 import plotly.figure_factory as ff
 import pandas as pd
+import numpy as np
+from functools import lru_cache
 from typing import Optional, Union, Callable, Literal
 from spectraldb.utils.io import load_cie_reference
 from spectraldb.utils.types import Element, CIEReference, Colorscale 
@@ -63,47 +65,41 @@ def spectral_density(el:Optional[Union[Element, list[Element]]]=None, data:Optio
     return fig
 
 
-def _process_input_for_heatmap(el:Optional[Union[Element, list[Element]]]=None, data:Optional[pd.DataFrame]=None) -> tuple[list, list]:
-    def func(el) -> tuple[list[float], Colorscale]:
-        df = filter_visible(preprocess(el, trimmed=True, xyz=True))
-        #df['color'] = list(map(XYZ_to_color, df['XYZ']))
-        #df['wl_norm'] = normalize_wavelength(df)
-        
-        
-        return df['log10_intensity'].tolist()
+def spectrum_walk(stepsize:float=0.1, minval:float=390, maxval:float=830):
+    spect = np.linspace(minval, maxval, num=int((maxval-minval)/stepsize)).tolist()
+    return spect
 
-    labs = None
-    if el is not None:    
-        if not isinstance(el, list):
-            data = [func(el)]
-            labs = [el]
-        else:
-            data = list(map(func, el))
-            labs = el
-    elif data is not None:
-        if not isinstance(data, list):
-            data = [data]
-            labs = ["Element"]
-    else:
-        raise ValueError
-
-    return data, labs
-
+@lru_cache(8)
 def heatmap(
-    el:Optional[Union[Element, list[Element]]]=None, data:Optional[pd.DataFrame]=None,
-    reference:Optional[CIEReference]=None, colorscale:Colorscale="viridis",
+        el:Optional[Union[Element, list[Element]]]=None,
+        reference:Optional[CIEReference]=None, colorscale:Colorscale="viridis",
     **kwargs) -> go.Figure: 
     
-    data, labs = _process_input_for_heatmap(el, data)
-    
+    data, labs = [], []
+
     ref = load_cie_reference(refdeg=reference)
     if colorscale == "reference":
         colorscale = make_colorscale(ref)
-
-    labs.append(reference if reference is not None else "CIE 2006 Deg 2")
+    #labs.append(reference if reference is not None else "CIE 2006 Deg 2")
     wl = ref['wavelength_nm'].tolist()
-    data.append([1.0]*len(data[0]))    
+    #data.append([1.0]*len(wl))    
 
+    
+    def func(el) -> tuple[list[float], Colorscale]:
+        df = filter_visible(preprocess(el, trimmed=True))
+        #f = lambda v: np.log10(df[(df["wavelength_nm"] >= v-0.05) & (df["wavelength_nm"] <= v+0.05)]['intensity'].sum()+1e-4)
+        f = lambda v: df[(df["wavelength_nm"] >= v-0.05) & (df["wavelength_nm"] <= v+0.05)].shape[0]
+        return [wave_bin if f(wave_bin) else 380 for wave_bin in spectrum_walk()]
+
+    if el is not None:    
+        if isinstance(el, str):
+            data += [func(el)]
+            labs += [el]
+        else:
+            data += list(map(func, el))
+            labs += el
+       
+    
     fig = go.Figure()
     
     fig.add_trace(go.Heatmap(
