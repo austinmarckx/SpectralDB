@@ -1,4 +1,3 @@
-
 import plotly.express as px
 import plotly.graph_objects as go
 import plotly.figure_factory as ff
@@ -10,21 +9,19 @@ from spectraldb.utils.io import load_cie_reference, get_element_name
 from spectraldb.utils.types import Element, CIEReference, Colorscale 
 from spectraldb.utils.preprocess import preprocess, filter_visible
 from spectraldb.utils.misc import uno_reverse
+from spectraldb.utils.defaults import DEFAULT_PLOTLY_LAYOUT
 from spectraldb.colorspaces import make_colorscale, normalize_wavelength, XYZ_to_color
 
-DEFAULT_LAYOUT = {
-    "template":"simple_white",
-    "font":{'family': "Times New Roman", "size": 24},
-}
+
 
 DEFAULT_LAYOUT_SPECTRAL_BANDS = {
-    **DEFAULT_LAYOUT,
+    **DEFAULT_PLOTLY_LAYOUT,
     "title":{"text":"Element Spectral Bands: 0.1 nm stepsize" },
     "xaxis":{"title": "Wavelength (nm)", "automargin":True },
 }
 
 DEFAULT_LAYOUT_SPECTRAL_DENSITY = {
-    **DEFAULT_LAYOUT,
+    **DEFAULT_PLOTLY_LAYOUT,
     "title":{"text":"Element Spectral Density" },
     "yaxis":{"title": "density", "automargin":True },
     "xaxis":{"title": "Wavelength (nm)", "automargin":True },

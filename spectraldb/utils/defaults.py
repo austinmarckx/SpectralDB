@@ -5,6 +5,7 @@ THIS_DIR = os.path.dirname(__file__)
 SPECTRALDB_ABS_PATH = os.path.sep.join(THIS_DIR.split(os.path.sep)[:-2])
 SPECTRALDB_SRC_ABS_PATH = os.path.sep.join(THIS_DIR.split(os.path.sep)[:-1])
 RAW_LINES_PATH = os.path.sep.join([SPECTRALDB_ABS_PATH, "data", "raw", "lines","wavelength"])
+PERIODIC_JSON_PATH = os.path.sep.join([SPECTRALDB_ABS_PATH, "data", "periodic_table", "PeriodicTableJSON.json"])
 
 UNITTEST_SETUP_STRING = """\n .----------------.  .----------------.  .----------------.  .----------------.  .----------------.  .-----------------. .----------------.   
 | .--------------. || .--------------. || .--------------. || .--------------. || .--------------. || .--------------. || .--------------. |  
@@ -33,3 +34,10 @@ ELEMENTS = {
     "Th":"Thorium","Pa":"Protactinium","U":"Uranium","Np":"Neptunium","Pu":"Plutonium","Am":"Americium","Cm":"Curium","Bk":"Berkelium","Cf":"Californium","Es":"Einsteinium","Fm":"Fermium","Md":"Mendelevium","No":"Nobelium","Lr":"Lawrencium", 
 }
 ELEMENTS_R = {v:k for k,v in ELEMENTS.items()}
+
+
+
+DEFAULT_PLOTLY_LAYOUT = {
+    "template":"simple_white",
+    "font":{'family': "Times New Roman", "size": 24},
+}
