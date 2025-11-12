@@ -11,29 +11,13 @@ class CIE_XYZ(NamedTuple):
     z:float
     deg:Literal[2, 10, 1931, 1964, 1965]
 
-    def as_RGB(self) -> 'RGB':
-        M_inv = np.matrix([
-            [2.3644, -0.8958, -0.4686],
-            [-0.5148, 1.4252, 0.0896],
-            [0.0052, -0.0144, 1.0092],
-        ])
-        rgb = np.arr([self.x, self.y, self.z]) @ M_inv
-        return RGB(rgb[0], rgb[1], rgb[2])
-
-class RGB(NamedTuple):
+class sRGB(NamedTuple):
     r:float
     g:float
     b:float
-    
-    def as_XYZ(self) -> CIE_XYZ:
-        M = np.matrix([
-            [0.490, 0.310, 0.200],
-            [0.177, 0.813, 0.010],
-            [0.000, 0.010, 0.990],
-        ])
-        XYZ = np.arr([self.r, self.g, self.b]) @ M
-        return CIE_XYZ(XYZ[0], XYZ[1], XYZ[2], 2)
 
+class Color(NamedTuple):
+    rgb:tuple[float,float,float]
 
 class Illuminant(NamedTuple):
     """ 
@@ -45,7 +29,7 @@ class Illuminant(NamedTuple):
 
 class Wavelength(NamedTuple):
     wl:float
-    rgb:Optional[RGB]=None
+    srgb:Optional[sRGB]=None
     xyz:Optional[CIE_XYZ]=None
     illuminant:Optional[Union[Illuminant,StandardIlluminant]]=None
     
