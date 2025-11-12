@@ -2,8 +2,8 @@ import logging
 logger = logging.getLogger()
 import unittest as ut
 
-import src.utils.io as io
-from src.utils.types import TestTuple, TestInputs, TestOutputs
+from spectraldb.utils.io import process_element_abbreviation, load_element
+from spectraldb.utils.types import TestTuple, TestInputs, TestOutputs
 
 from warnings import filterwarnings
 from typing import Optional, Callable
@@ -36,7 +36,7 @@ class TestIO(ut.TestCase):
         tests = self._element_abbreviation_conditions()
         def _subtest(name:str, inputs:TestInputs, outputs:Optional[TestOutputs]=None, func:Optional[Callable]=None):
             if func is None:
-                func = io.process_element_abbreviation 
+                func = process_element_abbreviation 
             args, kwargs = inputs.to_params()
             with self.subTest(name):
                 outs = func(*args, **kwargs)
@@ -63,7 +63,7 @@ class TestIO(ut.TestCase):
 
         def _subtest(name:str, inputs:TestInputs, outputs:Optional[TestOutputs]=None, func:Optional[Callable]=None):
             if func is None:
-                func = io.load_element 
+                func = load_element 
             args, kwargs = inputs.to_params()
             with self.subTest(name):
                 outs = func(*args, **kwargs)

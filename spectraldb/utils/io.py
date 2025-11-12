@@ -2,8 +2,8 @@
 import os
 import pandas as pd
 
-from .defaults import RAW_LINES_PATH, ELEMENTS, ELEMENTS_R
-from .types import Element, InvalidElementError
+from spectraldb.utils.defaults import RAW_LINES_PATH, ELEMENTS, ELEMENTS_R
+from spectraldb.utils.types import Element, InvalidElementError
 from typing import Optional, Union
 
 def system_agnostic_pathjoin(path:Union[str,list], root:Optional[Union[str,list]]=None):

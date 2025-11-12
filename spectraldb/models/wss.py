@@ -13,8 +13,8 @@ Citation:
 """
 import numpy as np
 from typing import Literal, Union
-from ..utils.types import CIE_XYZ, Wavelength
-from ..utils.defaults import LRU_CACHE_SIZE
+from spectraldb.utils.types import CIE_XYZ, Wavelength
+from spectraldb.utils.defaults import LRU_CACHE_SIZE
 from functools import lru_cache
 
 def replacena(val:float) -> float:
@@ -126,7 +126,7 @@ class WSS:
         pass
     
     @classmethod
-    def fit(cls, lam:Union[float,Wavelength], how:Literal["simple", "multi"]="multi", deg:Literal["2", "10"]="2"):
+    def fit(cls, lam:Union[float,Wavelength], how:Literal["simple", "multi"]="multi", deg:Literal["2", "10"]="2") -> CIE_XYZ:
         ans = None
         if how == "simple" and deg == "2":
             ans = simple_single_lobe_deg2(lam)

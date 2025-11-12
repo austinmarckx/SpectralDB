@@ -2,9 +2,9 @@ import logging
 logger = logging.getLogger()
 import unittest as ut
 
-from src.utils.defaults import UNITTEST_SETUP_STRING
-from src.utils.types import TestTuple, TestInputs, TestOutputs
-from src.utils.misc import nothing_burger
+from spectraldb.utils.defaults import UNITTEST_SETUP_STRING
+from spectraldb.utils.types import TestTuple, TestInputs, TestOutputs
+from spectraldb.utils.misc import nothing_burger
 from warnings import filterwarnings
 from typing import Optional, Callable
 

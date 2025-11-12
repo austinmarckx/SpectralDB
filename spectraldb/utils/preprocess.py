@@ -66,8 +66,9 @@ Descriptors to the relative intensities have the following meaning:
 import numpy as np
 import pandas as pd
 from typing import Optional
-from .types import Element
-from .io import load_element
+
+from spectraldb.utils.types import Element
+from spectraldb.utils.io import load_element
 
 COLUMN_MAP = {
     "element":"element",
@@ -143,7 +144,8 @@ def trim(df:pd.DataFrame) -> pd.DataFrame:
     """ Subset and """
     df = _subset_rename(df)
     df = df.dropna(subset=["wavelength_nm","intensity","log10_intensity"])
-    df = _type_conversion(df)    
+    df = _type_conversion(df)
+    df["visible"] = (df['wavelength_nm'] >= 300) & (df['wavelength_nm'] <= 800)
     return df
 
 

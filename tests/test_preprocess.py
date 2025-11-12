@@ -1,10 +1,12 @@
 import logging
 logger = logging.getLogger()
 import unittest as ut
+import os
+import sys
 
-import src.utils.preprocess as pp
-from src.utils.defaults import ELEMENTS_R
-from src.utils.types import TestTuple, TestInputs, TestOutputs
+from spectraldb.utils.preprocess import preprocess
+from spectraldb.utils.defaults import ELEMENTS_R, SPECTRALDB_SRC_ABS_PATH
+from spectraldb.utils.types import TestTuple, TestInputs, TestOutputs
 
 from warnings import filterwarnings
 from typing import Optional, Callable
@@ -30,7 +32,7 @@ class TestPreprocess(ut.TestCase):
         tests = self._preprocessing_conditions()
         def _subtest(name:str, inputs:TestInputs, outputs:Optional[TestOutputs]=None, func:Optional[Callable]=None):
             if func is None:
-                func = pp.preprocess
+                func = preprocess
             args, kwargs = inputs.to_params()
             with self.subTest(name):
                 outs = func(*args, **kwargs)
@@ -46,6 +48,11 @@ class TestPreprocess(ut.TestCase):
 
 
 if __name__ == '__main__':
+    original_sys_path = list(sys.path)  # Store original path
+    sys.path.insert(0, SPECTRALDB_SRC_ABS_PATH)
+    print(sys.path)
+    
     ut.main()
+    sys.path = original_sys_path
 
 

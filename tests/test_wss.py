@@ -2,9 +2,9 @@ import logging
 logger = logging.getLogger()
 import unittest as ut
 
-from src.models import wss as wss
-from src.utils.types import TestTuple, TestInputs, TestOutputs
-from src.utils.misc import nothing_burger
+from spectraldb.models import wss as wss
+from spectraldb.utils.types import TestTuple, TestInputs, TestOutputs
+from spectraldb.utils.misc import nothing_burger
 
 from warnings import filterwarnings
 from typing import Optional, Callable
@@ -103,6 +103,33 @@ class TestWSS(ut.TestCase):
         subtest_lambda = lambda test_tuple: _subtest(**test_tuple._asdict())
         self.res = list(map(subtest_lambda, tests))
         print(f"WSS Multi-lobe 1931 XYZ Approximation Result: {self.res}")
+
+    
+    def _wss_fit(self) -> list[TestTuple]:
+        """ Get the test tuples """
+        tests = [
+            {"name":"1931 simple approx", "inputs":{"kwargs":{"lam":455, "how":"simple", "deg":"2"}}, "func":wss.WSS.fit},
+            {"name":"1931 multi-lobe approx", "inputs":{"kwargs":{"lam":455, "how":"multi", "deg":"2"}}, "func":wss.WSS.fit},
+            {"name":"1964 simple approx", "inputs":{"kwargs":{"lam":455, "how":"simple", "deg":"10"}}, "func":wss.WSS.fit},
+        ]     
+        return  list(map(TestTuple.make, tests))
+
+    def test_wss_fit(self):
+        tests = self._wss_fit()
+        def _subtest(name:str, inputs:TestInputs, outputs:Optional[TestOutputs]=None, func:Optional[Callable]=None):
+            if func is None:
+                func = nothing_burger
+            args, kwargs = inputs.to_params()
+            with self.subTest(name):
+                outs = func(*args, **kwargs)
+                # So long as not error, success
+                return f"[SUCCESS] {name} {outs}"
+            return(f"[FAIL] {name}")
+
+        subtest_lambda = lambda test_tuple: _subtest(**test_tuple._asdict())
+        self.res = list(map(subtest_lambda, tests))
+        print(f"WSS fit Approximation Result: {self.res}")
+
 
 
 
