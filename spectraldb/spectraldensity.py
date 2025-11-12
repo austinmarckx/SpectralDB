@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 from functools import lru_cache
 from typing import Optional, Union, Callable, Literal
-from spectraldb.utils.io import load_cie_reference
+from spectraldb.utils.io import load_cie_reference, get_element_name
 from spectraldb.utils.types import Element, CIEReference, Colorscale 
 from spectraldb.utils.preprocess import preprocess, filter_visible
 from spectraldb.utils.misc import uno_reverse
@@ -15,6 +15,12 @@ from spectraldb.colorspaces import make_colorscale, normalize_wavelength, XYZ_to
 DEFAULT_LAYOUT = {
     "template":"simple_white",
     "font":{'family': "Times New Roman", "size": 24},
+}
+
+DEFAULT_LAYOUT_SPECTRAL_BANDS = {
+    **DEFAULT_LAYOUT,
+    "title":{"text":"Element Spectral Bands: 0.1 nm stepsize" },
+    "xaxis":{"title": "Wavelength (nm)", "automargin":True },
 }
 
 DEFAULT_LAYOUT_SPECTRAL_DENSITY = {
@@ -69,25 +75,28 @@ def spectrum_walk(stepsize:float=0.1, minval:float=390, maxval:float=830):
     spect = np.linspace(minval, maxval, num=int((maxval-minval)/stepsize)).tolist()
     return spect
 
+def reference_heatmap(el:Optional[Union[Element, list[Element]]]=None, minval=390, maxval=700, **kwargs):
+    return heatmap(el, colorscale="reference", showscale=False, minval=minval, maxval=maxval, **kwargs)
 
 def heatmap(
         el:Optional[Union[Element, list[Element]]]=None, minval:float=390, maxval:float=830,
-        reference:Optional[CIEReference]=None, colorscale:Colorscale="viridis",
+        colorscale:Colorscale="viridis", showscale:bool=True, reference:Optional[CIEReference]=None, 
     **kwargs) -> go.Figure: 
-    
+    layout = kwargs.get("layout", DEFAULT_LAYOUT_SPECTRAL_BANDS)
     data, labs = [], []
 
     ref = load_cie_reference(refdeg=reference)
     ref = ref[(ref["wavelength_nm"] >= minval) & (ref["wavelength_nm"] <= maxval)]
-
+    wl = ref['wavelength_nm'].tolist()
+    
     cs = colorscale
     if colorscale == "reference":
         cs = make_colorscale(ref)
-    #labs.append(reference if reference is not None else "CIE 2006 Deg 2")
-    wl = ref['wavelength_nm'].tolist()
-    #data.append([1.0]*len(wl))    
+        labs.append(reference if reference is not None else "CIE 2006 Deg 2")
+        data.append(wl)
+        showscale = False      
+        
 
-    
     def func(el) -> tuple[list[float], Colorscale]:
         df = filter_visible(preprocess(el, trimmed=True))
         f = lambda v1: df[(df["wavelength_nm"] >= v1-0.05) & (df["wavelength_nm"] <= v1+0.05)]
@@ -100,20 +109,19 @@ def heatmap(
     if el is not None:    
         if isinstance(el, str):
             data += [func(el)]
-            labs += [el]
+            labs += [get_element_name(el)]
         else:
             data += list(map(func, el))
-            labs += el
+            labs += list(map(get_element_name, el))
        
     
     fig = go.Figure()
     
     fig.add_trace(go.Heatmap(
-        y=labs, x=wl, z=data, colorscale=cs, **kwargs
+        y=labs, x=wl, z=data, colorscale=cs, showscale=showscale,
+        colorbar={"title":{"text":"log10(intensity)", "side":"top", "font":{"size": 18},}}, **kwargs
     ))
 
-    fig.update_layout(
-        **DEFAULT_LAYOUT
-    )
+    fig.update_layout(**layout)
 
     return fig

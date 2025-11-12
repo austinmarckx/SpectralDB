@@ -46,6 +46,16 @@ def process_element_abbreviation(abbr:str) -> str:
         return ELEMENTS_R[abbr]
     return abbr[:min(2, len(abbr))]
 
+def get_element_name(abbr:str) -> str:
+    abbr = lwrcap(abbr)
+    if abbr in ELEMENTS_R:
+        return abbr
+    elif abbr in ELEMENTS:
+        return ELEMENTS[abbr]
+    else:
+        raise ValueError("Unrecognized element")
+
+
 
 def load_element(el:Element, suffix:str=".csv") -> pd.DataFrame:
     """ 

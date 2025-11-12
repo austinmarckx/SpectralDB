@@ -119,7 +119,6 @@ def multi_lobe_deg2(lam:Union[float,Wavelength], zero_nas:bool=True) -> CIE_XYZ:
     return CIE_XYZ(x31, y31, z31, 2)
 
 
-
 class WSS:
     """ Wymann, Sloan, and Shirley (WSS) Analytic approximations of CIE XYZ Color matching functions"""
     def __init__(self):
