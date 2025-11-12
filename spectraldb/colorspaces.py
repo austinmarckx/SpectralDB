@@ -8,7 +8,6 @@ def sRGB_to_Color(srgb:sRGB) -> Color:
     convert = lambda val: max(0, min(round(val*255),255))
     return Color(rgb=(convert(srgb.r), convert(srgb.g), convert(srgb.b)) )
 
-
 def XYZ_to_sRGB(val:CIE_XYZ) -> sRGB:
     M_inv = np.matrix([
         [2.3644, -0.8958, -0.4686],

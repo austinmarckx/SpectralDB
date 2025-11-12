@@ -6,6 +6,10 @@ from spectraldb.utils.defaults import RAW_LINES_PATH, ELEMENTS, ELEMENTS_R
 from spectraldb.utils.types import Element, InvalidElementError
 from typing import Optional, Union
 
+def demo_data() -> pd.DataFrame:
+    df = pd.read_csv("data\\demo\\argon_demo.csv", index_col=0)
+    return df
+
 def system_agnostic_pathjoin(path:Union[str,list], root:Optional[Union[str,list]]=None):
     if root is None:
         root = os.path.dirname(__file__).split(os.path.sep)[:-2]

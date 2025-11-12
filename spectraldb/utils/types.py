@@ -3,6 +3,8 @@ from typing import Literal, Optional, Any, NamedTuple, Union, Callable
 
 type Element = Literal["H","He","Li","Be","B","C","N","O","F","Ne","Na","Mg","Al","Si","P","S","Cl","Ar","K","Ca","Sc","Ti","V","Cr","Mn","Fe","Co","Ni","Cu","Zn","Ga","Ge","As","Se","Br","Kr", "Rb","Sr","Y","Zr","Nb","Mo","Tc","Ru","Rh","Pd","Ag","Cd","In","Sn","Sb","Te","I","Xe","Cs","Ba","La","Hf","Ta","W","Re","Os","Ir","Pt","Au","Hg","Tl","Pb","Bi","Po","At","Rn","Fr","Ra","Ac","Rf","Db","Sg","Bh","Hs","Mt","Ds","Rg","Cn","Ce","Pr","Nd","Pm","Sm","Eu","Gd","Tb","Dy","Ho","Er","Tm","Yb","Lu","Th","Pa","U","Np","Pu","Am","Cm","Bk","Cf","Es","Fm","Md","No","Lr"]
 type StandardIlluminant = Literal["D65", "E"]
+type RGBTuple = tuple[float, float, float]
+type RGBATuple = tuple[float, float, float, float]
 
 class CIE_XYZ(NamedTuple):
     """ """
@@ -33,7 +35,19 @@ class Wavelength(NamedTuple):
     xyz:Optional[CIE_XYZ]=None
     illuminant:Optional[Union[Illuminant,StandardIlluminant]]=None
     
-    
+class ColorRange(NamedTuple):
+    lower:float
+    upper:float
+    r:int
+    g:int
+    b:int
+    a:float=1.0
+
+    def to_colorscale(self):
+        return [
+            (self.lower, f"rgba({self.r}, {self.g}, {self.b}, {self.a})"),
+            (self.upper, f"rgba({self.r}, {self.g}, {self.b}, {self.a})"),
+        ]
 
 
 

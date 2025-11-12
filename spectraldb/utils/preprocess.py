@@ -140,14 +140,22 @@ def drop_intermediate_tables(df:pd.DataFrame) -> pd.DataFrame:
     """
     return df[df['line_ref'] != "line_ref"]
 
+def _visibility_bool(df:pd.DataFrame, col:str='wavelength_nm', minval:float=300, maxval:float=800) -> pd.DataFrame:
+    df["visible"] = (df[col] >= minval) & (df[col] <= maxval)
+    return df
+
 def trim(df:pd.DataFrame) -> pd.DataFrame:
     """ Subset and """
     df = _subset_rename(df)
     df = df.dropna(subset=["wavelength_nm","intensity","log10_intensity"])
     df = _type_conversion(df)
-    df["visible"] = (df['wavelength_nm'] >= 300) & (df['wavelength_nm'] <= 800)
+    df = _visibility_bool(df)
     return df
 
+def filter_visible(df:pd.DataFrame) -> pd.DataFrame:
+    if "visible" not in df.columns:
+        df = _visibility_bool(df)
+    return df[df['visible'] == True]
 
 def _type_conversion(df:pd.DataFrame, mapping:Optional[dict[str,str]]=None) -> pd.DataFrame:
     if mapping is None:
