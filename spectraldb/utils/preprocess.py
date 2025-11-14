@@ -128,6 +128,10 @@ def preprocess(el:Element, trimmed:bool=False, xyz:bool=False) -> pd.DataFrame:
         df = trim(df)
     if xyz:
         df["XYZ"] = list(map(wss.WSS.fit, df["wavelength_nm"]))
+        df['x'] = [x for (x,y,z,_) in df["XYZ"]]
+        df['y'] = [y for (_,y,z,_) in df["XYZ"]]
+        df['z'] = [z for (_,_,z,_) in df["XYZ"]]
+       
     return df
     
 def cell_parser(value):

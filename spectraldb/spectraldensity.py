@@ -9,8 +9,8 @@ from spectraldb.utils.io import load_cie_reference, get_element_name
 from spectraldb.utils.types import Element, CIEReference, Colorscale 
 from spectraldb.utils.preprocess import preprocess, filter_visible
 from spectraldb.utils.misc import uno_reverse
-from spectraldb.utils.defaults import DEFAULT_PLOTLY_LAYOUT
-from spectraldb.colorspaces import make_colorscale, normalize_wavelength, XYZ_to_color
+from spectraldb.utils.defaults import DEFAULT_PLOTLY_LAYOUT, ELEMENTS
+from spectraldb.colorspaces import make_colorscale, make_elemental_colorscale
 
 
 
@@ -91,16 +91,23 @@ def heatmap(
         cs = make_colorscale(ref)
         labs.append(reference if reference is not None else "CIE 2006 Deg 2")
         data.append(wl)
-        showscale = False      
-        
+        showscale = False
+    elif colorscale == "elements":
+        cs = [v for idx, v in enumerate(make_elemental_colorscale(el)) if idx % 2 or v[0] == 1]
+        showscale = False
+        layout['xaxis']['showticklabels'] = False
+        layout['xaxis']['title'] = ""
+
 
     def func(el) -> tuple[list[float], Colorscale]:
         df = filter_visible(preprocess(el, trimmed=True))
         f = lambda v1: df[(df["wavelength_nm"] >= v1-0.05) & (df["wavelength_nm"] <= v1+0.05)]
         g = lambda v2: f(v2).shape[0]
         h = lambda v3: np.log10(f(v3)['intensity'].sum()+1)
-        if colorscale == "reference":
+        if colorscale in ["reference"]:
             return [wave_bin if g(wave_bin) else minval for wave_bin in spectrum_walk(0.1, minval=minval, maxval=maxval)]        
+        elif colorscale in ["elements"]:
+            return list(np.linspace(0.0, 1.0, len(spectrum_walk(0.1, minval=minval, maxval=maxval))))        
         return [h(wave_bin) if g(wave_bin) else 0 for wave_bin in spectrum_walk(0.1, minval=minval, maxval=maxval)]
 
     if el is not None:    
@@ -122,3 +129,13 @@ def heatmap(
     fig.update_layout(**layout)
 
     return fig
+
+def element_colormap_generator(el:Optional[Union[Element, list[Element]]]=None, **kwargs):
+    if el is None: 
+        el = ELEMENTS
+
+    for e in el:
+        try:
+            yield heatmap(e, colorscale="elements", **kwargs)
+        except:
+            pass

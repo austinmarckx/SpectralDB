@@ -14,6 +14,15 @@ type StandardIlluminant = Literal["D65", "E"]
 type RGBTuple = tuple[float, float, float]
 type RGBATuple = tuple[float, float, float, float]
 
+class RGBA(NamedTuple):
+    r:float
+    g:float
+    b:float
+    a:Optional[float]=1.0
+
+    def tostr(self):
+        return f"rgba({self.r},{self.g},{self.b},{self.a})"
+
 class CIE_XYZ(NamedTuple):
     """ """
     x:float
@@ -28,6 +37,11 @@ class sRGB(NamedTuple):
 
 class Color(NamedTuple):
     rgb:RGBTuple
+
+    @classmethod
+    def totuple(cls, rgba:str):
+        prefix = "rgba("
+        return RGBA(*map(float, rgba[len(prefix):-1].split(",")))
 
     def tostr(self):
         return f"rgb({self.rgb[0]},{self.rgb[1]},{self.rgb[2]})"
