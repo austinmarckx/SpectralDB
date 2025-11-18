@@ -6,8 +6,8 @@ http://www.brucelindbloom.com/index.html
 
 """
 import numpy as np
-from spectraldb.utils.types import WorkingSpace, RGB_WORKING_SPACE
-
+from spectraldb.utils.types import WorkingSpace, RGB_WORKING_SPACE, CIE_xyY, NamedIlluminant, Illuminant
+from spectraldb.illuminant import get_illuminant
 
 Adobe_RGB_1998 = {
     "name":"Adobe_RGB_1998",
@@ -218,6 +218,9 @@ sRGB = {
         [-0.9692660,  1.8760108,  0.0415560],
         [ 0.0556434, -0.2040259,  1.0572252],
     ]),
+    "r_xyY":CIE_xyY(x=0.6400, y=0.3300, Y=0.2126),
+    "g_xyY":CIE_xyY(x=0.3000, y=0.6000, Y=0.7152),
+    "b_xyY":CIE_xyY(x=0.1500, y=0.0600, Y=0.0722),
 }
 Wide_Gamut_RGB = {
     "name":"Wide_Gamut_RGB",
@@ -240,6 +243,42 @@ WORKING_SPACES_LIST = [
     sRGB, Wide_Gamut_RGB
 ]
 WORKING_SPACES_DICT = {ws["name"]:WorkingSpace(**ws) for ws in WORKING_SPACES_LIST}
+
+
+def create_working_space(name:str, red:CIE_xyY, green:CIE_xyY, blue:CIE_xyY, ill:NamedIlluminant):
+    if not isinstance(ill, Illuminant):
+        ill = get_illuminant(ill)
+    
+    def _parse_xyY(xyY) -> tuple[float, float, float]:
+        x = xyY.x / xyY.y
+        y = 1
+        z = xyY.z() / xyY.y
+        return x, y, z
+    
+    xr, yr, zr = _parse_xyY(red)
+    xg, yg, zg = _parse_xyY(green)
+    xb, yb, zb = _parse_xyY(blue)
+
+    mat = np.array([
+        [xr, xg, xb],
+        [yr, yg, yb],
+        [zr, zg, zb],
+    ])
+
+    S = np.linalg.inv(mat) @ ill.to_numpy()
+    sr, sg, sb = S[0], S[1], S[2]
+
+    M = np.array([
+        [sr*xr, sg*xg, sb*xb],
+        [sr*yr, sg*yg, sb*yb],
+        [sr*zr, sg*zg, sb*zb],
+    ])
+    M_inv = np.linalg.inv(M)
+
+    return WorkingSpace(name=name, ill=ill.name, M=M, M_inv=M_inv, r_xyY=red, g_xyY=green, b_xyY=blue)
+    
+
+
 
 
 def get_working_space(ws:RGB_WORKING_SPACE) -> WorkingSpace:
