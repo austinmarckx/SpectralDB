@@ -5,12 +5,32 @@ import matplotlib.colors as colors
 from itertools import chain
 from typing import Optional, Literal, Union, NamedTuple
 from spectraldb.utils.types import (
-    CIE_XYZ, RGB, Color, RGBTuple, ColorRange, Wavelength, Element, Illuminant, RGB_WORKING_SPACE
+    CIE_XYZ, RGB, Color, RGBTuple, ColorRange, Wavelength, Element, 
+    Illuminant, StandardIlluminant, RGB_WORKING_SPACE,
+    CIE_xyY, CIE_Lab, NamedIlluminant, LCHab, Luv, LCHuv
     )
+from spectraldb.illuminant import get_illuminant
 from spectraldb.utils.misc import minmaxnorm
 from spectraldb.models.wss import WSS
 from spectraldb.models.lindbloom import get_working_space
 from spectraldb.utils.preprocess import preprocess, filter_visible
+
+WEIN_DISPLACEMENT_CONST_NM = 2_897_771.955185172661
+CIE_CORRECTED_EPSILON = 216/24389
+CIE_CORRECTED_KAPPA = 24389/27
+
+
+def wein_approx(wavelength_nm:float) -> float:
+    """ Wein's displacement law - input nm - output K"""
+    return WEIN_DISPLACEMENT_CONST_NM / wavelength_nm
+
+# def chromaticity_coordinates(wl:Optional[float]=None, temp:Optional[float]=None):
+#     assert wl is not None or temp is not None, ValueError("Either wl or temp must be specified")
+#     if wl is not None:
+#         temp = wein_approx(wl)
+    
+    
+
 
 
 
@@ -75,7 +95,127 @@ def RGB_to_Color(RGB:RGB) -> Color:
     return Color(rgb=(convert(RGB.r), convert(RGB.g), convert(RGB.b)) )
 
 
+def XYZ_to_Luv(val:CIE_XYZ, ill:NamedIlluminant="E") -> Luv:
+    if not isinstance(ill, Illuminant):
+        ill = get_illuminant(ill)
+    
+    u_prime = 4*val.x / (val.x + 15*val.y + 3*val.z)
+    v_prime = 9*val.y / (val.x + 15*val.y + 3*val.z)
+    ur_prime = 4*ill.X / (ill.X + 15*ill.Y + 3*ill.Z)
+    vr_prime = 9*ill.Y / (ill.X + 15*ill.Y + 3*ill.Z)
 
+    yr = val.y / ill.Y
+    L = CIE_CORRECTED_KAPPA * yr
+    if yr > CIE_CORRECTED_EPSILON:
+        L = 116*np.cbrt(yr) - 16
+    
+    u = 13*L*(u_prime - ur_prime)
+    v = 13*L*(v_prime - vr_prime)
+    return Luv(L, u, v, ill.name)
+
+def Luv_to_XYZ(val:Luv) -> CIE_XYZ:
+    ill = val.ill
+    if not isinstance(ill, Illuminant):
+        ill = get_illuminant(ill)
+    u0 = 4*ill.X / (ill.X + 15*ill.Y + 3*ill.Z)
+    v0 = 9*ill.Y / (ill.X + 15*ill.Y + 3*ill.Z)
+
+    y = val.L/CIE_CORRECTED_KAPPA
+    if val.L > CIE_CORRECTED_KAPPA * CIE_CORRECTED_EPSILON:
+        y = ((val.L+16)/116)**3
+
+    a = (1/3)*( (52*val.L) / (val.u + 13*val.L*u0) - 1)
+    b = -5*y
+    c = -1/3
+    d = y*( (39*val.L) / (val.v + 13*val.L*v0) - 5)
+
+    x = (d-b)/(a-c)
+    z = (x*a + b)
+
+    return CIE_XYZ(x, y, z)
+
+def Luv_to_LCHuv(val:Luv) -> LCHuv:
+    tmp = np.rad2deg(np.atan2(val.v, val.u))
+    C = np.sqrt(val.u**2 + val.v**2)
+    H = tmp if tmp else 360
+    return LCHuv(val.L, C, H, val.ill)
+
+def LCHuv_to_Luv(val:LCHuv) -> Luv:
+    u = val.C*np.cos(val.H)
+    v = val.C*np.sin(val.H)
+    return Luv(val.L, u, v, val.ill)
+
+
+
+def XYZ_to_Lab(val:CIE_XYZ, ill:NamedIlluminant="E") -> CIE_Lab:
+    if not isinstance(ill, Illuminant):
+        ill = get_illuminant(ill)
+    xr = val.x / ill.X
+    yr = val.y / ill.Y
+    zr = val.z / ill.Z
+
+    def eps_func(num:float) -> float:
+        if num > CIE_CORRECTED_EPSILON:
+            return np.cbrt(num)
+        return (CIE_CORRECTED_KAPPA*num + 16)/116
+    
+    fx, fy, fz = eps_func(xr), eps_func(yr), eps_func(zr)
+
+    L = 116*fy - 16
+    a = 500*(fx-fy)
+    b = 200*(fy-fz)
+    return CIE_Lab(L, a, b, ill.name)
+
+def Lab_to_XYZ(val:CIE_Lab) -> CIE_XYZ:
+    ill = val.ill
+    if not isinstance(ill, Illuminant):
+        ill = get_illuminant(ill)
+    
+    def eps_func(num:float) -> float:
+        if num**3 > CIE_CORRECTED_EPSILON:
+            return num ** 3
+        return (116*num - 16)/CIE_CORRECTED_KAPPA
+
+    fy = (val.L + 16)/116
+    yr = val.L / CIE_CORRECTED_KAPPA
+    if val.L > CIE_CORRECTED_EPSILON*CIE_CORRECTED_KAPPA:
+        yr = fy ** 3
+
+    fx = (val.a/500) + fy
+    fz = fy - (val.b/200)
+    xr, zr = eps_func(fx), eps_func(fz) 
+
+    x = xr * ill.X
+    y = yr * ill.Y
+    z = zr * ill.Z
+
+    return CIE_XYZ(x, y, z)
+
+def Lab_to_LCHab(val:CIE_Lab) -> LCHab:
+    tmp = np.rad2deg(np.atan2(val.b, val.a))
+    C = np.sqrt(val.a**2 + val.b**2)
+    H = tmp if tmp else 360
+    return LCHab(val.L, C, H, val.ill)
+
+def LCHab_to_Lab(val:LCHab) -> CIE_Lab:
+    a = val.C*np.cos(np.deg2rad(val.H))
+    b = val.C*np.sin(np.deg2rad(val.H))
+    return CIE_Lab(val.L, a, b, val.ill)
+
+def XYZ_to_xyY(val:CIE_XYZ) -> CIE_xyY:
+    denom = val.to_numpy().sum() if val.to_numpy().sum() else 1.
+    x = val.x / denom
+    y = val.y / denom
+    return CIE_xyY(x, y, val.y)
+
+def xyY_to_XYZ(val:CIE_xyY):
+    if val.y == 0:
+        return CIE_XYZ(0,0,0)
+
+    x = (val.Y*val.x)/val.y
+    y = val.Y
+    z = (val.Y*val.z())/val.y
+    return CIE_XYZ(x, y, z)
 
 def XYZ_to_RGB(val:CIE_XYZ, space:Literal[RGB_WORKING_SPACE]="CIE_RGB") -> RGB:
     space = get_working_space(space)

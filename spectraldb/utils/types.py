@@ -17,8 +17,43 @@ type Colorscale = Union[PlotlyColorscale, CustomColorscale]
 type Element = Literal["H","He","Li","Be","B","C","N","O","F","Ne","Na","Mg","Al","Si","P","S","Cl","Ar","K","Ca","Sc","Ti","V","Cr","Mn","Fe","Co","Ni","Cu","Zn","Ga","Ge","As","Se","Br","Kr", "Rb","Sr","Y","Zr","Nb","Mo","Tc","Ru","Rh","Pd","Ag","Cd","In","Sn","Sb","Te","I","Xe","Cs","Ba","La","Hf","Ta","W","Re","Os","Ir","Pt","Au","Hg","Tl","Pb","Bi","Po","At","Rn","Fr","Ra","Ac","Rf","Db","Sg","Bh","Hs","Mt","Ds","Rg","Cn","Ce","Pr","Nd","Pm","Sm","Eu","Gd","Tb","Dy","Ho","Er","Tm","Yb","Lu","Th","Pa","U","Np","Pu","Am","Cm","Bk","Cf","Es","Fm","Md","No","Lr"]
 type CIEReference = Literal["1931_deg2", "2006_deg2", "2006_deg10"]
 type StandardIlluminant = Literal["A","B","C","D50", "D55", "D65","D75", "E", "F2", "F7", "F11"]
+type NamedIlluminant = Union[Illuminant, StandardIlluminant]
 type RGBTuple = tuple[float, float, float]
 type RGBATuple = tuple[float, float, float, float]
+
+class CIE_xyY(NamedTuple):
+    x:float
+    y:float
+    Y:float
+
+    def z(self) -> float:
+        return 1 - self.x - self.y
+
+class Luv(NamedTuple):
+    L:float
+    u:float
+    v:float
+    ill:NamedIlluminant
+
+class CIE_Lab(NamedTuple):
+    L:float
+    a:float
+    b:float
+    ill:NamedIlluminant
+
+class LCHab(NamedTuple):
+    L:float
+    C:float
+    H:float
+    ill:NamedIlluminant
+
+class LCHuv(NamedTuple):
+    L:float
+    C:float
+    H:float
+    ill:NamedIlluminant
+        
+
 
 class CIE_XYZ(NamedTuple):
     """ """
@@ -69,7 +104,7 @@ class RGB(NamedTuple):
 class WorkingSpace(NamedTuple):
     """ RGB_to_XYZ [M] ; XYZ_to_RGB [M_inv]"""
     name:RGB_WORKING_SPACE
-    ill:Illuminant
+    ill:NamedIlluminant
     M:np.ndarray
     M_inv:np.ndarray
 
@@ -112,7 +147,7 @@ class Wavelength(NamedTuple):
     wl:float
     rgb:Optional[RGB]=None
     xyz:Optional[CIE_XYZ]=None
-    illuminant:Optional[Union[Illuminant,StandardIlluminant]]=None
+    illuminant:Optional[NamedIlluminant]=None
     
 
     
