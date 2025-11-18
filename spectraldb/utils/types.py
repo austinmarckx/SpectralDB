@@ -90,6 +90,12 @@ class RGBA(NamedTuple):
     b:float
     a:Optional[float]=1.0
 
+    def normalize(self, denom:int=255) -> np.ndarray:
+        return self.to_numpy()/denom
+
+    def to_numpy(self) -> np.ndarray:
+        return np.array([self.r, self.g, self.b])
+
     def tostr(self):
         return f"rgba({self.r},{self.g},{self.b},{self.a})"
 
@@ -97,7 +103,10 @@ class RGB(NamedTuple):
     r:float
     g:float
     b:float
-    
+
+    def normalize(self, denom:int=255) -> np.ndarray:
+        return self.to_numpy()/denom
+
     def to_numpy(self) -> np.ndarray:
         return np.array([self.r, self.g, self.b])
 

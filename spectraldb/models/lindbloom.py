@@ -6,7 +6,7 @@ http://www.brucelindbloom.com/index.html
 
 """
 import numpy as np
-from spectraldb.utils.types import WorkingSpace, RGB_WORKING_SPACE, CIE_xyY, NamedIlluminant, Illuminant
+from spectraldb.utils.types import WorkingSpace, NamedWorkingSpace, CIE_xyY, NamedIlluminant, Illuminant
 from spectraldb.illuminant import get_illuminant
 
 Adobe_RGB_1998 = {
@@ -250,9 +250,9 @@ def create_working_space(name:str, red:CIE_xyY, green:CIE_xyY, blue:CIE_xyY, ill
         ill = get_illuminant(ill)
     
     def _parse_xyY(xyY) -> tuple[float, float, float]:
-        x = xyY.x / xyY.y
+        x = xyY.x / xyY.y if xyY.y else 0.
         y = 1
-        z = xyY.z() / xyY.y
+        z = xyY.z() / xyY.y if xyY.y else 0.
         return x, y, z
     
     xr, yr, zr = _parse_xyY(red)
@@ -279,12 +279,10 @@ def create_working_space(name:str, red:CIE_xyY, green:CIE_xyY, blue:CIE_xyY, ill
     
 
 
-
-
-def get_working_space(ws:RGB_WORKING_SPACE) -> WorkingSpace:
+def get_working_space(ws:NamedWorkingSpace) -> WorkingSpace:
     try:
         return WORKING_SPACES_DICT[ws]
     except:
-        raise ValueError(f"{ws} is not a recognized chromatic adaptation")
+        raise ValueError(f"{ws} is not a recognized working space")
 
 

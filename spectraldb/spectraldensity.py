@@ -3,14 +3,16 @@ import plotly.graph_objects as go
 import plotly.figure_factory as ff
 import pandas as pd
 import numpy as np
-from functools import lru_cache
+from itertools import chain
+from functools import lru_cache, partial
 from typing import Optional, Union, Callable, Literal
+from spectraldb.utils.log import Log
 from spectraldb.utils.io import load_cie_reference, get_element_name
 from spectraldb.utils.types import Element, CIEReference, Colorscale 
 from spectraldb.utils.preprocess import preprocess, filter_visible
 from spectraldb.utils.misc import uno_reverse
 from spectraldb.utils.defaults import DEFAULT_PLOTLY_LAYOUT, ELEMENTS
-from spectraldb.colorspaces import make_colorscale, make_elemental_colorscale
+from spectraldb.colorspaces import make_colorscale, make_elemental_colorscale,make_elemental_primaries_colorscale
 
 
 
@@ -82,6 +84,10 @@ def heatmap(
     layout = kwargs.get("layout", DEFAULT_LAYOUT_SPECTRAL_BANDS)
     data, labs = [], []
 
+    if isinstance(el, str):
+        el = [el]
+
+
     ref = load_cie_reference(refdeg=reference)
     ref = ref[(ref["wavelength_nm"] >= minval) & (ref["wavelength_nm"] <= maxval)]
     wl = ref['wavelength_nm'].tolist()
@@ -93,9 +99,15 @@ def heatmap(
         data.append(wl)
         showscale = False
     elif colorscale == "elements":
-        cs = [v for idx, v in enumerate(make_elemental_colorscale(el)) if idx % 2 or v[0] == 1]
+        kwargs.get("elworkspace", True)
+        elws = True
+        if "elworkspace" in kwargs: 
+            elws = kwargs.pop("elworkspace")
+        mk = partial(make_elemental_colorscale, elworkspace=elws)
+        cs = list(chain.from_iterable(map(mk, el)))
+        #cs = [v for idx, v in enumerate(make_elemental_colorscale(el,elws)) if idx % 2 or v[0] == 1]
         showscale = False
-        layout['xaxis']['showticklabels'] = False
+        #layout['xaxis']['showticklabels'] = False
         layout['xaxis']['title'] = ""
 
 
@@ -106,18 +118,14 @@ def heatmap(
         h = lambda v3: np.log10(f(v3)['intensity'].sum()+1)
         if colorscale in ["reference"]:
             return [wave_bin if g(wave_bin) else minval for wave_bin in spectrum_walk(0.1, minval=minval, maxval=maxval)]        
-        elif colorscale in ["elements"]:
+        elif colorscale in ["elements"] or not isinstance(colorscale, str):
             return list(np.linspace(0.0, 1.0, len(spectrum_walk(0.1, minval=minval, maxval=maxval))))        
         return [h(wave_bin) if g(wave_bin) else 0 for wave_bin in spectrum_walk(0.1, minval=minval, maxval=maxval)]
 
     if el is not None:    
-        if isinstance(el, str):
-            data += [func(el)]
-            labs += [get_element_name(el)]
-        else:
-            data += list(map(func, el))
-            labs += list(map(get_element_name, el))
-       
+        data += list(map(func, el))
+        labs += list(map(get_element_name, el))
+    
     
     fig = go.Figure()
     
@@ -130,12 +138,32 @@ def heatmap(
 
     return fig
 
-def element_colormap_generator(el:Optional[Union[Element, list[Element]]]=None, **kwargs):
+def element_colormap_generator(el:Optional[Union[Element, list[Element]]]=None, cs="elements", **kwargs):
     if el is None: 
         el = ELEMENTS
 
     for e in el:
         try:
-            yield heatmap(e, colorscale="elements", **kwargs)
-        except:
-            pass
+            colorscale = cs
+            if cs == "primaries":
+                colorscale = make_elemental_primaries_colorscale(el)
+            yield heatmap(e, colorscale=colorscale, **kwargs)
+        except Exception:
+            print(f"Error element {e}")
+            #Log.log(f"element: {e}", "ERROR", e)
+            continue
+
+def element_generator( f:Optional[Callable]=None, el:Optional[Union[Element, list[Element]]]=None, **kwargs):
+    if f is None:
+        f = uno_reverse
+    if el is None: 
+        el = ELEMENTS
+
+    for e in el:
+        try:
+            print(f"Element: {e}")
+            yield f(e, **kwargs)
+        except Exception as ex:
+            print(f"Error element {e}")
+            #Log.log(f"element: {e}", "ERROR", ex)
+            continue
