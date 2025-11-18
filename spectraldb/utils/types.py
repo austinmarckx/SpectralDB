@@ -47,20 +47,6 @@ class Illuminant(NamedTuple):
     def to_numpy(self) -> np.ndarray:
         return np.array([self.X, self.Y, self.Z])
 
-class WorkingSpace(NamedTuple):
-    """ RGB_to_XYZ [M] ; XYZ_to_RGB [M_inv]"""
-    name:RGB_WORKING_SPACE
-    white:Illuminant
-    M:np.ndarray
-    M_inv:np.ndarray
-
-class ChromaticAdaptation(NamedTuple):
-    """ """
-    name:Literal["XYZ_Scaling", "Bradford", "Von Kries"]
-    M:np.ndarray
-    M_inv:np.ndarray
-
-
 
 class RGBA(NamedTuple):
     r:float
@@ -71,12 +57,29 @@ class RGBA(NamedTuple):
     def tostr(self):
         return f"rgba({self.r},{self.g},{self.b},{self.a})"
 
-
-
-class sRGB(NamedTuple):
+class RGB(NamedTuple):
     r:float
     g:float
     b:float
+    
+    def to_numpy(self) -> np.ndarray:
+        return np.array([self.r, self.g, self.b])
+
+
+class WorkingSpace(NamedTuple):
+    """ RGB_to_XYZ [M] ; XYZ_to_RGB [M_inv]"""
+    name:RGB_WORKING_SPACE
+    ill:Illuminant
+    M:np.ndarray
+    M_inv:np.ndarray
+
+class ChromaticAdaptation(NamedTuple):
+    """ """
+    name:Literal["XYZ_Scaling", "Bradford", "Von Kries"]
+    M:np.ndarray
+    M_inv:np.ndarray
+
+
 
 class ConeResponseDomain(NamedTuple):
     rho:float
@@ -107,7 +110,7 @@ class Color(NamedTuple):
 
 class Wavelength(NamedTuple):
     wl:float
-    srgb:Optional[sRGB]=None
+    rgb:Optional[RGB]=None
     xyz:Optional[CIE_XYZ]=None
     illuminant:Optional[Union[Illuminant,StandardIlluminant]]=None
     

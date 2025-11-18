@@ -3,11 +3,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 from itertools import chain
-from typing import Optional, Literal, Union
-from spectraldb.utils.types import CIE_XYZ, sRGB, Color, RGBTuple, ColorRange, Wavelength, Element
+from typing import Optional, Literal, Union, NamedTuple
+from spectraldb.utils.types import (
+    CIE_XYZ, RGB, Color, RGBTuple, ColorRange, Wavelength, Element, Illuminant, RGB_WORKING_SPACE
+    )
 from spectraldb.utils.misc import minmaxnorm
 from spectraldb.models.wss import WSS
+from spectraldb.models.lindbloom import get_working_space
 from spectraldb.utils.preprocess import preprocess, filter_visible
+
+
 
 def make_elemental_colorscale(el:Optional[Union[Element, list[Element]]]=None):
     if isinstance(el, str):
@@ -60,29 +65,26 @@ def wavelength_to_color(val:Union[float,Wavelength]) -> Color:
     return XYZ_to_color(wavelength_to_XYZ(val))
 
 def XYZ_to_color(val:CIE_XYZ) -> Color:
-    return sRGB_to_Color(XYZ_to_sRGB(val))
+    return RGB_to_Color(XYZ_to_RGB(val))
 
-def sRGB_to_Color(srgb:sRGB) -> Color:
-    """ Translate sRGB into closest renderable color 
-    sRGB can contain negative values from colorspace conversion which cannot be rendered.
+def RGB_to_Color(RGB:RGB) -> Color:
+    """ Translate RGB into closest renderable color 
+    RGB can contain negative values from colorspace conversion which cannot be rendered.
     """
     convert = lambda val: max(0, min(round(val*255),255))
-    return Color(rgb=(convert(srgb.r), convert(srgb.g), convert(srgb.b)) )
+    return Color(rgb=(convert(RGB.r), convert(RGB.g), convert(RGB.b)) )
 
-def XYZ_to_sRGB(val:CIE_XYZ) -> sRGB:
-    M_inv = np.matrix([
-        [2.3644, -0.8958, -0.4686],
-        [-0.5148, 1.4252, 0.0896],
-        [0.0052, -0.0144, 1.0092],
-    ])
-    rgb = (np.array([val.x, val.y, val.z]) @ M_inv).tolist()
-    return sRGB(rgb[0][0], rgb[0][1], rgb[0][2])
 
-def sRGB_to_XYZ(val:sRGB) -> CIE_XYZ:
-    M = np.matrix([
-        [0.490, 0.310, 0.200],
-        [0.177, 0.813, 0.010],
-        [0.000, 0.010, 0.990],
-    ])
-    XYZ = (np.array([val.r, val.g, val.b]) @ M).tolist()
-    return CIE_XYZ(XYZ[0][0], XYZ[0][1], XYZ[0][2], "2")
+
+
+def XYZ_to_RGB(val:CIE_XYZ, space:Literal[RGB_WORKING_SPACE]="CIE_RGB") -> RGB:
+    space = get_working_space(space)
+    rgb = (val.to_numpy() @ space.M_inv).tolist()
+    return RGB(rgb[0], rgb[1], rgb[2])
+
+def RGB_to_XYZ(val:RGB, space:Literal[RGB_WORKING_SPACE]="CIE_RGB") -> CIE_XYZ:
+    space = get_working_space(space)
+    XYZ = (val.to_numpy() @ space.M).tolist()
+    return CIE_XYZ(XYZ[0], XYZ[1], XYZ[2])
+
+

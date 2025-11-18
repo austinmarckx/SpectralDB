@@ -1,4 +1,4 @@
-from spectraldb.utils.types import Illuminant, StandardIlluminant, InvalidIlluminantError
+from spectraldb.utils.types import Illuminant, StandardIlluminant
 
 illuminantA = Illuminant("A", X=1.09850, Y=1.00000, Z=0.35585)
 illuminantB = Illuminant("B", X=0.99072, Y=1.00000, Z=0.85223)
@@ -30,4 +30,4 @@ def get_illuminant(ill:StandardIlluminant) -> Illuminant:
     try:
         return ILLUMINANT_DICT[ill]
     except:
-        raise InvalidIlluminantError(f"{ill} is not a recognized illuminant")
+        raise ValueError(f"{ill} is not a recognized illuminant")

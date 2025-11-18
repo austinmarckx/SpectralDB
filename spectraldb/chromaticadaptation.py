@@ -1,7 +1,6 @@
 import numpy as np
 from typing import Literal, Union
-from spectraldb.utils.types import (ChromaticAdaptation, ConeResponseDomain, Illuminant, 
-        CIE_XYZ, InvalidChromaticAdaptationError)
+from spectraldb.utils.types import ChromaticAdaptation, Illuminant, CIE_XYZ
 from spectraldb.illuminant import get_illuminant
 
 XYZ_Scaling = {
@@ -55,7 +54,7 @@ def get_adaptation(adapt:Adaptation):
     try:
         return ADAPTATION_DICT[adapt]
     except:
-        raise InvalidChromaticAdaptationError(f"{adapt} is not a recognized chromatic adaptation")
+        raise ValueError(f"{adapt} is not a recognized chromatic adaptation")
     
 def adapt(source:CIE_XYZ, dest_ill:Union[str, Illuminant],  adaptation:Union[Adaptation, ChromaticAdaptation]="xyz_scaling", src_ill:Union[str, Illuminant]="E",) -> CIE_XYZ:
     if isinstance(adaptation, str):
@@ -65,12 +64,10 @@ def adapt(source:CIE_XYZ, dest_ill:Union[str, Illuminant],  adaptation:Union[Ada
     if isinstance(dest_ill, str):
         dest_ill = get_illuminant(dest_ill)
 
-
     src_ill_cone_resp = A.M @ src_ill.to_numpy()
     dest_ill_cone_resp = A.M @ dest_ill.to_numpy()
     ratios = np.identity(3) * (dest_ill_cone_resp / src_ill_cone_resp)
     M = A.M_inv @ ratios @ A.M
-    print(M)
 
     dest = M @ source.to_numpy()
     return CIE_XYZ(x=dest[0], y=dest[1], z=dest[2], deg=source.deg)
