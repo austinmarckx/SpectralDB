@@ -1,5 +1,3 @@
-import logging
-
 import numpy as np
 from typing import Literal, Optional, Any, NamedTuple, Union, Callable
 from datetime import datetime, timezone
@@ -22,6 +20,16 @@ type StandardIlluminant = Literal["A","B","C","D50", "D55", "D65","D75", "E", "F
 type RGBTuple = tuple[float, float, float]
 type RGBATuple = tuple[float, float, float, float]
 
+class CIE_XYZ(NamedTuple):
+    """ """
+    x:float
+    y:float
+    z:float
+    deg:Optional[Literal["2", "10", "1931", "1964", "1965"]]=None
+
+    def to_numpy(self) -> np.ndarray:
+        return np.array([self.x, self.y, self.z])
+
 class Illuminant(NamedTuple):
     """ 
     Theoretically you can construct an illumnant
@@ -33,6 +41,12 @@ class Illuminant(NamedTuple):
     Y:float
     Z:float
 
+    def to_CIE_XYZ(self) -> CIE_XYZ:
+        return CIE_XYZ(x=self.X, y=self.Y, z=self.Z)
+
+    def to_numpy(self) -> np.ndarray:
+        return np.array([self.X, self.Y, self.Z])
+
 class WorkingSpace(NamedTuple):
     """ RGB_to_XYZ [M] ; XYZ_to_RGB [M_inv]"""
     name:RGB_WORKING_SPACE
@@ -41,9 +55,8 @@ class WorkingSpace(NamedTuple):
     M_inv:np.ndarray
 
 class ChromaticAdaptation(NamedTuple):
-    """ RGB_to_XYZ [M] ; XYZ_to_RGB [M_inv]"""
+    """ """
     name:Literal["XYZ_Scaling", "Bradford", "Von Kries"]
-    white:Illuminant
     M:np.ndarray
     M_inv:np.ndarray
 
@@ -58,17 +71,18 @@ class RGBA(NamedTuple):
     def tostr(self):
         return f"rgba({self.r},{self.g},{self.b},{self.a})"
 
-class CIE_XYZ(NamedTuple):
-    """ """
-    x:float
-    y:float
-    z:float
-    deg:Optional[Literal["2", "10", "1931", "1964", "1965"]]=None
+
 
 class sRGB(NamedTuple):
     r:float
     g:float
     b:float
+
+class ConeResponseDomain(NamedTuple):
+    rho:float
+    gamma:float
+    beta:float
+
 
 class Color(NamedTuple):
     rgb:RGBTuple
@@ -116,6 +130,12 @@ class ColorRange(NamedTuple):
 
 
 class InvalidElementError(Exception):
+    pass
+
+class InvalidIlluminantError(Exception):
+    pass
+
+class InvalidChromaticAdaptationError(Exception):
     pass
 
 class TestInputs(NamedTuple):

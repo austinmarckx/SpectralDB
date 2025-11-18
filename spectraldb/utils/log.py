@@ -3,7 +3,7 @@ import logging
 logger = logging.getLogger(__name__)
 from typing import Literal, Optional
 
-from utils.types import Timestamp
+from spectraldb.utils.types import Timestamp
 
 LOGGING_LEVELS_R = {"NOTSET":0, "DEBUG":10, "INFO":20, "WARNING":30, "ERROR":40, "CRITICAL":50}
 LOGGING_LEVELS = {v:k for k, v in LOGGING_LEVELS_R.items()}
