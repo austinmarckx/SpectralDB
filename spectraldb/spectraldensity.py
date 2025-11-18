@@ -79,7 +79,8 @@ def reference_heatmap(el:Optional[Union[Element, list[Element]]]=None, minval=39
 
 def heatmap(
         el:Optional[Union[Element, list[Element]]]=None, minval:float=390, maxval:float=830,
-        colorscale:Colorscale="viridis", showscale:bool=True, reference:Optional[CIEReference]=None, 
+        colorscale:Colorscale="viridis", showscale:bool=True, reference:Optional[CIEReference]=None,
+        gamma:float=2.2, 
     **kwargs) -> go.Figure: 
     layout = kwargs.get("layout", DEFAULT_LAYOUT_SPECTRAL_BANDS)
     data, labs = [], []
@@ -94,7 +95,7 @@ def heatmap(
     
     cs = colorscale
     if colorscale == "reference":
-        cs = make_colorscale(ref)
+        cs = make_colorscale(ref, gamma=gamma)
         labs.append(reference if reference is not None else "CIE 2006 Deg 2")
         data.append(wl)
         showscale = False
@@ -162,7 +163,7 @@ def element_generator( f:Optional[Callable]=None, el:Optional[Union[Element, lis
     for e in el:
         try:
             print(f"Element: {e}")
-            yield f(e, **kwargs)
+            yield e, f(e, **kwargs)
         except Exception as ex:
             print(f"Error element {e}")
             #Log.log(f"element: {e}", "ERROR", ex)

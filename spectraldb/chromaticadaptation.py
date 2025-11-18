@@ -1,6 +1,6 @@
 import numpy as np
 from typing import Literal, Union
-from spectraldb.utils.types import ChromaticAdaptation, Illuminant, CIE_XYZ
+from spectraldb.utils.types import ChromaticAdaptation, NamedIlluminant, CIE_XYZ
 from spectraldb.illuminant import get_illuminant
 
 XYZ_Scaling = {
@@ -56,7 +56,7 @@ def get_adaptation(adapt:Adaptation):
     except:
         raise ValueError(f"{adapt} is not a recognized chromatic adaptation")
     
-def adapt(source:CIE_XYZ, dest_ill:Union[str, Illuminant],  adaptation:Union[Adaptation, ChromaticAdaptation]="xyz_scaling", src_ill:Union[str, Illuminant]="E",) -> CIE_XYZ:
+def adapt(source:CIE_XYZ, dest_ill:NamedIlluminant,  adaptation:Union[Adaptation, ChromaticAdaptation]="xyz_scaling", src_ill:NamedIlluminant="E",) -> CIE_XYZ:
     if isinstance(adaptation, str):
         A = get_adaptation(adaptation)    
     if isinstance(src_ill, str):
