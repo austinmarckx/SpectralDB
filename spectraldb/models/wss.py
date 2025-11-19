@@ -12,8 +12,8 @@ Citation:
 }
 """
 import numpy as np
-from typing import Literal, Union
-from spectraldb.utils.types import CIE_XYZ, Wavelength
+from typing import Literal
+from spectraldb.utils.types import CIE_XYZ
 from spectraldb.utils.defaults import LRU_CACHE_SIZE
 from functools import lru_cache
 
@@ -72,13 +72,12 @@ def z31_multi_lobe_deg2(wl:float) -> float:
 
 
 @lru_cache(LRU_CACHE_SIZE)
-def simple_single_lobe_deg2(lam:Union[float,Wavelength], zero_nas:bool=True) -> CIE_XYZ:
+def simple_single_lobe_deg2(lam:float, zero_nas:bool=True) -> CIE_XYZ:
     """ 2degree CIE 1931 standard observer """
-    if not isinstance(lam, Wavelength):
-        lam = Wavelength(lam)
-    x31 = x31_simple_single_lobe_deg2(lam.wl)
-    y31 = y31_simple_single_lobe_deg2(lam.wl)
-    z31 = z31_simple_single_lobe_deg2(lam.wl)
+    
+    x31 = x31_simple_single_lobe_deg2(lam)
+    y31 = y31_simple_single_lobe_deg2(lam)
+    z31 = z31_simple_single_lobe_deg2(lam)
     
     if zero_nas:
         x31 = replacena(x31)
@@ -88,13 +87,12 @@ def simple_single_lobe_deg2(lam:Union[float,Wavelength], zero_nas:bool=True) -> 
     return CIE_XYZ(x31, y31, z31, 2)
 
 @lru_cache(LRU_CACHE_SIZE)
-def simple_single_lobe_deg10(lam:Union[float,Wavelength], zero_nas:bool=True) -> CIE_XYZ:
+def simple_single_lobe_deg10(lam:float, zero_nas:bool=True) -> CIE_XYZ:
     """ 10 degree CIE 1964 standard observer """
-    if not isinstance(lam, Wavelength):
-        lam = Wavelength(lam)
-    x64 = x64_simple_single_lobe_deg10(lam.wl)
-    y64 = y64_simple_single_lobe_deg10(lam.wl)
-    z64 = z64_simple_single_lobe_deg10(lam.wl)
+    
+    x64 = x64_simple_single_lobe_deg10(lam)
+    y64 = y64_simple_single_lobe_deg10(lam)
+    z64 = z64_simple_single_lobe_deg10(lam)
 
     if zero_nas:
         x64 = replacena(x64)
@@ -103,13 +101,12 @@ def simple_single_lobe_deg10(lam:Union[float,Wavelength], zero_nas:bool=True) ->
     return CIE_XYZ(x64, y64, z64, 10)
 
 @lru_cache(LRU_CACHE_SIZE)
-def multi_lobe_deg2(lam:Union[float,Wavelength], zero_nas:bool=True) -> CIE_XYZ:
+def multi_lobe_deg2(lam:float, zero_nas:bool=True) -> CIE_XYZ:
     """ 2degree CIE 1931 standard observer """
-    if not isinstance(lam, Wavelength):
-        lam = Wavelength(lam)
-    x31 = x31_multi_lobe_deg2(lam.wl)
-    y31 = y31_multi_lobe_deg2(lam.wl)
-    z31 = z31_multi_lobe_deg2(lam.wl)
+    
+    x31 = x31_multi_lobe_deg2(lam)
+    y31 = y31_multi_lobe_deg2(lam)
+    z31 = z31_multi_lobe_deg2(lam)
         
     if zero_nas:
         x31 = replacena(x31)
@@ -125,7 +122,7 @@ class WSS:
         pass
     
     @classmethod
-    def fit(cls, lam:Union[float,Wavelength], how:Literal["simple", "multi"]="multi", deg:Literal["2", "10"]="2") -> CIE_XYZ:
+    def fit(cls, lam:float, how:Literal["simple", "multi"]="multi", deg:Literal["2", "10"]="2") -> CIE_XYZ:
         ans = None
         if how == "simple" and deg == "2":
             ans = simple_single_lobe_deg2(lam)

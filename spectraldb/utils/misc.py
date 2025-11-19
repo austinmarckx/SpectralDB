@@ -1,7 +1,3 @@
-import random
-import pandas as pd
-from typing import Union
-from spectraldb.utils.types import Wavelength
 
 def minmaxnorm(ls:list[float]) -> float:
     """ Normalize list entries between 0 and 1 """
@@ -28,11 +24,5 @@ def uno_reverse(*args, **kwargs):
         pass 
     return out
 
-def select_random_wavelengths(df:pd.DataFrame, n:int=1, col:str="wavelength_nm") -> Union[list[Wavelength], Wavelength]:
-    chosen = random.sample(df[col].to_list(), n)
-    waves = list(map(Wavelength, chosen))
-    if len(waves) > 1:
-        return waves
-    return waves[0]
 
 

@@ -80,7 +80,7 @@ def reference_heatmap(el:Optional[Union[Element, list[Element]]]=None, minval=39
 def heatmap(
         el:Optional[Union[Element, list[Element]]]=None, minval:float=390, maxval:float=830,
         colorscale:Colorscale="viridis", showscale:bool=True, reference:Optional[CIEReference]=None,
-        gamma:float=2.2, 
+        gamma:Optional[float]=None, 
     **kwargs) -> go.Figure: 
     layout = kwargs.get("layout", DEFAULT_LAYOUT_SPECTRAL_BANDS)
     data, labs = [], []

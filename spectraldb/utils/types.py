@@ -155,18 +155,6 @@ class Color(NamedTuple):
 
 
 
-
-
-
-
-
-class Wavelength(NamedTuple):
-    wl:float
-    rgb:Optional[RGB]=None
-    xyz:Optional[CIE_XYZ]=None
-    illuminant:Optional[NamedIlluminant]=None
-    
-
     
 class ColorRange(NamedTuple):
     lower:float

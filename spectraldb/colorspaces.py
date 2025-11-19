@@ -3,13 +3,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 from itertools import chain
-from functools import partial
+from functools import partial, lru_cache
 from typing import Optional, Literal, Union, NamedTuple
 from spectraldb.utils.types import (
-    CIE_XYZ, RGB, Color, RGBTuple, ColorRange, Wavelength, Element, 
+    CIE_XYZ, RGB, Color, RGBTuple, ColorRange, Element, 
     Illuminant, NamedWorkingSpace, WorkingSpace, CustomColorscale,
     CIE_xyY, CIE_Lab, NamedIlluminant, LCHab, Luv, LCHuv
     )
+from spectraldb.utils.io import load_cie_reference
 from spectraldb.chromaticadaptation import adapt
 from spectraldb.illuminant import get_illuminant
 from spectraldb.utils.misc import minmaxnorm
@@ -35,7 +36,7 @@ def element_spectrum_walk(el:Element, **kwargs):
     spect = [v.tostr() for v in spect]
     return walk_colorlist(spect)
 
-def make_elemental_color_list(el:Union[Element, list[Element]], space:NamedWorkingSpace="CIE_RGB", gamma:float=1.0):
+def make_elemental_color_list(el:Union[Element, list[Element]], space:NamedWorkingSpace="CIE_RGB", gamma:Optional[float]=None):
     if isinstance(el, str):
         el = [el]
     df = pd.concat([ filter_visible(preprocess(e, trimmed=True, xyz=True))for e in el], axis=0, ignore_index=True)
@@ -47,12 +48,12 @@ def spectrum_walk(stepsize:float=0.1, minval:float=390, maxval:float=830):
     spect = np.linspace(minval, maxval, num=int((maxval-minval)/stepsize)).tolist()
     return spect
 
-def workingspace_spectrum(space:NamedWorkingSpace, step:int=1, gamma:float=1.0, **kwargs) -> CustomColorscale:
+def workingspace_spectrum(space:NamedWorkingSpace, step:int=1, gamma:Optional[float]=None, **kwargs) -> CustomColorscale:
     f = partial(wavelength_to_color, space=space, gamma=gamma)
     spect = spectrum_walk(**kwargs)
     return list(map(f, spect))[::min(step, len(spect))]
 
-def make_elemental_workingspace(el:Union[Element, list[Element]], ill:NamedIlluminant="E", gamma:float=1.0):
+def make_elemental_workingspace(el:Union[Element, list[Element]], ill:NamedIlluminant="E", gamma:Optional[float]=None):
     if isinstance(el, str):
         el = [el]
     df = pd.concat([ filter_visible(preprocess(e, trimmed=True, xyz=True))for e in el], axis=0, ignore_index=True)
@@ -83,7 +84,7 @@ def make_elemental_primaries_colorscale(el:Element) -> CustomColorscale:
 def walk_colorlist(ls):
     return [(idx, color) for idx, color in zip(list(np.linspace(0.0, 1.0, len(ls))), ls) ]
 
-def make_elemental_colorscale(el:Union[Element, list[Element]], elworkspace:bool=True, space:NamedWorkingSpace="CIE_RGB", maxsamples:Optional[int]=None, gamma:float=1.0):
+def make_elemental_colorscale(el:Union[Element, list[Element]], elworkspace:bool=True, space:NamedWorkingSpace="CIE_RGB", maxsamples:Optional[int]=None, gamma:Optional[float]=None):
     if isinstance(el, str):
         el = [el]
     if elworkspace:
@@ -102,7 +103,7 @@ def make_elemental_colorscale(el:Union[Element, list[Element]], elworkspace:bool
     return cs 
 
 
-def make_colorscale(df:pd.DataFrame, norm_col:str="wl_norm", color_col:str="color", space:NamedWorkingSpace="CIE_RGB", gamma:float=1.0) -> list[ColorRange]:
+def make_colorscale(df:pd.DataFrame, norm_col:str="wl_norm", color_col:str="color", space:NamedWorkingSpace="CIE_RGB", gamma:Optional[float]=None) -> list[ColorRange]:
     if norm_col not in df.columns:
         df[norm_col] = normalize_wavelength(df)
     if color_col not in df.columns:
@@ -130,21 +131,27 @@ def cmap_handler(cmap:str, lower:float=0.0, upper: float=1.0, n: int=100):
         return new_cmap
     return truncate_colormap(plt.get_cmap(cmap), lower, upper, n)
 
-def add_color_col(df:pd.DataFrame, xcol:str="x", ycol:str="y", zcol:str="z", deg:Optional[Literal["2","10"]]=None, space:NamedWorkingSpace="CIE_RGB", gamma:float=1.0, **kwargs) -> list[RGBTuple]:    
+def add_color_col(df:pd.DataFrame, xcol:str="x", ycol:str="y", zcol:str="z", deg:Optional[Literal["2","10"]]=None, space:NamedWorkingSpace="CIE_RGB", gamma:Optional[float]=None, **kwargs) -> list[RGBTuple]:    
     func = lambda x,y,z: XYZ_to_color(CIE_XYZ(x,y,z,deg=deg), space)[0]
     return [func(x,y,z) for x,y,z in zip(df[xcol], df[ycol], df[zcol])] 
 
 def normalize_wavelength(df:pd.DataFrame, col:str="wavelength_nm") -> list[float]:
     return minmaxnorm(df.sort_values(by=col,ascending=True)[col].tolist()) 
 
-def wavelength_to_XYZ(val:Union[float,Wavelength], **kwargs) -> CIE_XYZ:
+def wavelength_to_XYZ(val:float, **kwargs) -> CIE_XYZ:
+    # First try lookup: 
+    if val >= 390 and val <= 830:
+        ref = load_cie_reference()
+        sub = ref[ref["wavelength_nm"] == val]
+        if sub.shape[0]:
+            return CIE_XYZ(sub['x'].values[0], sub['y'].values[0], sub['z'].values[0], "2")
+    # O/w Approx
     return WSS.fit(val, **kwargs)
 
-def wavelength_to_color(val:Union[float,Wavelength], space:NamedWorkingSpace="CIE_RGB", gamma:float=1.0) -> Color:
-    adapted = adapt(wavelength_to_XYZ(val), "E", "bradford")
-    return XYZ_to_color(adapted, space=space, gamma=gamma)
+def wavelength_to_color(val:float, space:NamedWorkingSpace="CIE_RGB", gamma:Optional[float]=None) -> Color:
+    return XYZ_to_color(wavelength_to_XYZ(val), space=space, gamma=gamma)
 
-def XYZ_to_color(val:CIE_XYZ, space:NamedWorkingSpace="CIE_RGB", gamma:float=1.0) -> Color:
+def XYZ_to_color(val:CIE_XYZ, space:NamedWorkingSpace="CIE_RGB", gamma:Optional[float]=None) -> Color:
     return RGB_to_Color(XYZ_to_RGB(val, space, gamma))
 
 def RGB_to_Color(RGB:RGB) -> Color:
@@ -153,7 +160,7 @@ def RGB_to_Color(RGB:RGB) -> Color:
     """
     def convert(val):
         if isinstance(val, complex):
-            val = val.real
+            val = abs(val)
         return max(0, min(round(val*255),255))
     return Color(rgb=(convert(RGB.r), convert(RGB.g), convert(RGB.b)) )
 
@@ -207,8 +214,6 @@ def LCHuv_to_Luv(val:LCHuv) -> Luv:
     u = val.C*np.cos(val.H)
     v = val.C*np.sin(val.H)
     return Luv(val.L, u, v, val.ill)
-
-
 
 def XYZ_to_Lab(val:CIE_XYZ, ill:NamedIlluminant="E") -> CIE_Lab:
     if not isinstance(ill, Illuminant):
@@ -280,17 +285,21 @@ def xyY_to_XYZ(val:CIE_xyY):
     z = (val.Y*val.z())/val.y
     return CIE_XYZ(x, y, z)
 
-def XYZ_to_RGB(val:CIE_XYZ, space:NamedWorkingSpace="CIE_RGB", gamma:float=1.0) -> RGB:
+def XYZ_to_RGB(val:CIE_XYZ, space:NamedWorkingSpace="CIE_RGB", gamma:Optional[float]=None) -> RGB:
     if isinstance(space, str):
         space = get_working_space(space)
-    #rgb = (val.to_numpy() @ space.M_inv).tolist()
-    gamma_func = lambda v: v ** (1/gamma)
+    g = gamma if gamma is not None else space.gamma
+    gamma_func = lambda v: v ** (1/g)
     rgb = list(map(gamma_func, (space.M_inv @ val.to_numpy()).tolist() ))
+
     return RGB(rgb[0], rgb[1], rgb[2])
 
-def RGB_to_XYZ(val:RGB, space:NamedWorkingSpace="CIE_RGB") -> CIE_XYZ:
+def RGB_to_XYZ(val:RGB, space:NamedWorkingSpace="CIE_RGB", gamma:Optional[float]=None) -> CIE_XYZ:
     if isinstance(space, str):
         space = get_working_space(space)
+    
+    g = gamma if gamma is not None else space.gamma
+    gamma_func = lambda v: v ** g
     XYZ = (space.M @ val.normalize()).tolist()
     return CIE_XYZ(XYZ[0], XYZ[1], XYZ[2])
 
