@@ -78,8 +78,8 @@ def reference_heatmap(el:Optional[Union[Element, list[Element]]]=None, minval=39
     return heatmap(el, colorscale="reference", showscale=False, minval=minval, maxval=maxval, **kwargs)
 
 def heatmap(
-        el:Optional[Union[Element, list[Element]]]=None, minval:float=390, maxval:float=830,
-        colorscale:Colorscale="viridis", showscale:bool=True, reference:Optional[CIEReference]=None,
+        el:Optional[Union[Element, list[Element]]]=None, minval:float=390, maxval:float=830, step:float=0.1,
+        colorscale:Colorscale="viridis", showscale:bool=True, reference:Optional[int]=None,
         gamma:Optional[float]=None, 
     **kwargs) -> go.Figure: 
     layout = kwargs.get("layout", DEFAULT_LAYOUT_SPECTRAL_BANDS)
@@ -88,15 +88,14 @@ def heatmap(
     if isinstance(el, str):
         el = [el]
 
-
-    ref = load_cie_reference(refdeg=reference)
+    ref = load_cie_reference(idx=reference)
     ref = ref[(ref["wavelength_nm"] >= minval) & (ref["wavelength_nm"] <= maxval)]
     wl = ref['wavelength_nm'].tolist()
     
     cs = colorscale
     if colorscale == "reference":
         cs = make_colorscale(ref, gamma=gamma)
-        labs.append(reference if reference is not None else "CIE 2006 Deg 2")
+        labs.append(str(reference) if reference is not None else "CIE 2006 Deg 2")
         data.append(wl)
         showscale = False
     elif colorscale == "elements":
@@ -114,19 +113,21 @@ def heatmap(
 
     def func(el) -> tuple[list[float], Colorscale]:
         df = filter_visible(preprocess(el, trimmed=True))
-        f = lambda v1: df[(df["wavelength_nm"] >= v1-0.05) & (df["wavelength_nm"] <= v1+0.05)]
+        f = lambda v1: df[(df["wavelength_nm"] >= v1-step/2) & (df["wavelength_nm"] <= v1+step/2)]
         g = lambda v2: f(v2).shape[0]
         h = lambda v3: np.log10(f(v3)['intensity'].sum()+1)
         if colorscale in ["reference"]:
-            return [wave_bin if g(wave_bin) else minval for wave_bin in spectrum_walk(0.1, minval=minval, maxval=maxval)]        
+            return [wave_bin if g(wave_bin) else minval for wave_bin in spectrum_walk(step, minval=minval, maxval=maxval)]        
         elif colorscale in ["elements"] or not isinstance(colorscale, str):
-            return list(np.linspace(0.0, 1.0, len(spectrum_walk(0.1, minval=minval, maxval=maxval))))        
-        return [h(wave_bin) if g(wave_bin) else 0 for wave_bin in spectrum_walk(0.1, minval=minval, maxval=maxval)]
+            return list(np.linspace(0.0, 1.0, len(spectrum_walk(step, minval=minval, maxval=maxval))))        
+        return [h(wave_bin) if g(wave_bin) else 0 for wave_bin in spectrum_walk(step, minval=minval, maxval=maxval)]
+
 
     if el is not None:    
         data += list(map(func, el))
         labs += list(map(get_element_name, el))
     
+    print(data)
     
     fig = go.Figure()
     

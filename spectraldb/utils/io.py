@@ -17,12 +17,12 @@ CIE_LIST = list(map(join_cie, [
 ]))
 CIE_REF_DICT = {idx:fp for idx, fp in enumerate(CIE_LIST)}
 
-@lru_cache
+@lru_cache(5)
 def load_cie_reference(ref:Literal["1931", "2006"]="2006", deg:Literal["2","10"]="2", refdeg:Optional[CIEReference]=None, idx:Optional[int]=None):
     if refdeg is not None:
         ref, deg = refdeg.split("_deg")
 
-    _load = lambda fp: pd.read_csv(fp, header=None, names=["wavelength_nm","x","y","z"])
+    _load = lambda fp: pd.read_csv(fp, header=None, names=["wavelength_nm","x","y","z"]).fillna(0)
     def _parse(ref, deg):
         idx = None
         if ref == "1931" and deg == "2":

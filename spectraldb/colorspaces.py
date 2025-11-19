@@ -69,10 +69,10 @@ def make_elemental_workingspace(el:Union[Element, list[Element]], ill:NamedIllum
 
     return create_working_space("_".join(el), r_xyY, g_xyY, b_xyY, ill=ill)  
 
-def primaries_from_workingspace(space:NamedWorkingSpace) -> list[RGB, RGB, RGB]:
+def primaries_from_workingspace(space:NamedWorkingSpace, **kwargs) -> list[RGB, RGB, RGB]:
     if isinstance(space, str):
         space = get_working_space(space)
-    _get_color = lambda xyY: XYZ_to_color(xyY_to_XYZ(xyY)).tostr()
+    _get_color = lambda xyY: XYZ_to_color(xyY_to_XYZ(xyY), **kwargs).tostr()
     return [_get_color(space.r_xyY), _get_color(space.g_xyY), _get_color(space.b_xyY)]
 
 def make_elemental_primaries_colorscale(el:Element) -> CustomColorscale:
@@ -108,7 +108,7 @@ def make_colorscale(df:pd.DataFrame, norm_col:str="wl_norm", color_col:str="colo
         df[norm_col] = normalize_wavelength(df)
     if color_col not in df.columns:
         df[color_col] = add_color_col(df, space=space, gamma=gamma)
-        
+
     func = lambda idx: {
         "lower":df[norm_col][idx-1] if idx > 1 else 0.,
         "upper":df[norm_col][idx],
@@ -132,7 +132,7 @@ def cmap_handler(cmap:str, lower:float=0.0, upper: float=1.0, n: int=100):
     return truncate_colormap(plt.get_cmap(cmap), lower, upper, n)
 
 def add_color_col(df:pd.DataFrame, xcol:str="x", ycol:str="y", zcol:str="z", deg:Optional[Literal["2","10"]]=None, space:NamedWorkingSpace="CIE_RGB", gamma:Optional[float]=None, **kwargs) -> list[RGBTuple]:    
-    func = lambda x,y,z: XYZ_to_color(CIE_XYZ(x,y,z,deg=deg), space)[0]
+    func = lambda x,y,z: XYZ_to_color(CIE_XYZ(x,y,z,deg=deg), space, gamma)[0]
     return [func(x,y,z) for x,y,z in zip(df[xcol], df[ycol], df[zcol])] 
 
 def normalize_wavelength(df:pd.DataFrame, col:str="wavelength_nm") -> list[float]:
@@ -299,7 +299,7 @@ def RGB_to_XYZ(val:RGB, space:NamedWorkingSpace="CIE_RGB", gamma:Optional[float]
     
     g = gamma if gamma is not None else space.gamma
     gamma_func = lambda v: v ** g
-    XYZ = (space.M @ val.normalize()).tolist()
+    XYZ = list(map(gamma_func, (space.M @ val.normalize()).tolist() ))
     return CIE_XYZ(XYZ[0], XYZ[1], XYZ[2])
 
 
