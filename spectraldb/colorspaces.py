@@ -138,18 +138,18 @@ def add_color_col(df:pd.DataFrame, xcol:str="x", ycol:str="y", zcol:str="z", deg
 def normalize_wavelength(df:pd.DataFrame, col:str="wavelength_nm") -> list[float]:
     return minmaxnorm(df.sort_values(by=col,ascending=True)[col].tolist()) 
 
-def wavelength_to_XYZ(val:float, **kwargs) -> CIE_XYZ:
+def wavelength_to_XYZ(val:float, reference:Optional[int]=None, **kwargs) -> CIE_XYZ:
     # First try lookup: 
     if val >= 390 and val <= 830:
-        ref = load_cie_reference()
+        ref = load_cie_reference(idx=reference)
         sub = ref[ref["wavelength_nm"] == val]
         if sub.shape[0]:
             return CIE_XYZ(sub['x'].values[0], sub['y'].values[0], sub['z'].values[0], "2")
     # O/w Approx
     return WSS.fit(val, **kwargs)
 
-def wavelength_to_color(val:float, space:NamedWorkingSpace="CIE_RGB", gamma:Optional[float]=None) -> Color:
-    return XYZ_to_color(wavelength_to_XYZ(val), space=space, gamma=gamma)
+def wavelength_to_color(val:float, space:NamedWorkingSpace="CIE_RGB", gamma:Optional[float]=None, reference:Optional[int]=None) -> Color:
+    return XYZ_to_color(wavelength_to_XYZ(val, reference), space=space, gamma=gamma)
 
 def XYZ_to_color(val:CIE_XYZ, space:NamedWorkingSpace="CIE_RGB", gamma:Optional[float]=None) -> Color:
     return RGB_to_Color(XYZ_to_RGB(val, space, gamma))
@@ -163,7 +163,6 @@ def RGB_to_Color(RGB:RGB) -> Color:
             val = abs(val)
         return max(0, min(round(val*255),255))
     return Color(rgb=(convert(RGB.r), convert(RGB.g), convert(RGB.b)) )
-
 
 def XYZ_to_Luv(val:CIE_XYZ, ill:NamedIlluminant="E") -> Luv:
     if not isinstance(ill, Illuminant):

@@ -2,24 +2,44 @@
 import os
 import pandas as pd
 from functools import lru_cache
-from spectraldb.utils.defaults import RAW_LINES_PATH, ELEMENTS, ELEMENTS_R
+from spectraldb.utils.defaults import RAW_LINES_PATH, ELEMENTS, ELEMENTS_R, CIE_BASE_PATH
 from spectraldb.utils.types import Element, InvalidElementError, CIEReference
 from typing import Optional, Union, Literal
 
+
+join_cie = lambda v: os.path.sep.join([CIE_BASE_PATH, v])
+CIE_LIST = list(map(join_cie, [
+    "CIE_xyz_1931_2deg.csv",
+    "lin2012xyz2e_fine_7sf.csv",
+    "lin2012xyz10e_fine_7sf.csv",
+    "cc2012xyz10_fine_5dp.csv", 
+    "linss2_10e_fine.csv", 
+]))
+CIE_REF_DICT = {idx:fp for idx, fp in enumerate(CIE_LIST)}
+
 @lru_cache
-def load_cie_reference(ref:Literal["1931", "2006"]="2006", deg:Literal["2","10"]="2", refdeg:Optional[CIEReference]=None):
+def load_cie_reference(ref:Literal["1931", "2006"]="2006", deg:Literal["2","10"]="2", refdeg:Optional[CIEReference]=None, idx:Optional[int]=None):
     if refdeg is not None:
         ref, deg = refdeg.split("_deg")
 
-    df = None
-    if ref == "1931" and deg == "2":
-        df = pd.read_csv("data\\CIE\\CIE_xyz_1931_2deg.csv", header=None, names=["wavelength_nm","x","y","z"])
-    elif ref == "2006" and deg == "2":
-        df = pd.read_csv("data\\CIE\\lin2012xyz2e_fine_7sf.csv", header=None, names=["wavelength_nm","x","y","z"])
-    elif ref == "2006" and deg == "10":
-        df = pd.read_csv("data\\CIE\\lin2012xyz10e_fine_7sf.csv", header=None, names=["wavelength_nm","x","y","z"])
-    else:
-        raise ValueError("Invalid ref/deg combination")
+    _load = lambda fp: pd.read_csv(fp, header=None, names=["wavelength_nm","x","y","z"])
+    def _parse(ref, deg):
+        idx = None
+        if ref == "1931" and deg == "2":
+            idx = 0
+        elif ref == "2006" and deg == "2":
+            idx = 1
+        elif ref == "2006" and deg == "10":
+            idx = 2
+        else:
+            raise ValueError("Invalid ref/deg combination")
+        return idx
+
+    if idx is None:
+        idx = _parse(ref, deg)
+    
+    df = _load(CIE_REF_DICT[idx])
+        
     return df
 
 def demo_data() -> pd.DataFrame:
