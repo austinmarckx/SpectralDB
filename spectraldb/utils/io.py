@@ -1,11 +1,12 @@
 
 import os
 import pandas as pd
-
+from functools import lru_cache
 from spectraldb.utils.defaults import RAW_LINES_PATH, ELEMENTS, ELEMENTS_R
 from spectraldb.utils.types import Element, InvalidElementError, CIEReference
 from typing import Optional, Union, Literal
 
+@lru_cache
 def load_cie_reference(ref:Literal["1931", "2006"]="2006", deg:Literal["2","10"]="2", refdeg:Optional[CIEReference]=None):
     if refdeg is not None:
         ref, deg = refdeg.split("_deg")
