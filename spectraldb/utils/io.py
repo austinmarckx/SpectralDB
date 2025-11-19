@@ -2,9 +2,18 @@
 import os
 import pandas as pd
 from functools import lru_cache
-from spectraldb.utils.defaults import RAW_LINES_PATH, ELEMENTS, ELEMENTS_R, CIE_BASE_PATH
+from spectraldb.utils.defaults import RAW_LINES_PATH, ELEMENTS, ELEMENTS_R, CIE_BASE_PATH, CHECKERS_BASE_PATH
 from spectraldb.utils.types import Element, InvalidElementError, CIEReference
 from typing import Optional, Union, Literal
+
+
+
+
+join_checkers = lambda v: os.path.sep.join([CHECKERS_BASE_PATH, v])
+CHECKERS_LIST = list(map(join_checkers, [
+    "luo2024.csv",
+]))
+CHECKERS_REF_DICT = {idx:fp for idx, fp in enumerate(CHECKERS_LIST)}
 
 
 join_cie = lambda v: os.path.sep.join([CIE_BASE_PATH, v])
@@ -12,8 +21,11 @@ CIE_LIST = list(map(join_cie, [
     "CIE_xyz_1931_2deg.csv",
     "lin2012xyz2e_fine_7sf.csv",
     "lin2012xyz10e_fine_7sf.csv",
-    "cc2012xyz10_fine_5dp.csv", 
     "linss2_10e_fine.csv", 
+    "cc2012xyz2_fine_5dp.csv",
+    "cc2012xyz10_fine_5dp.csv", 
+    "mb2_fine.csv",
+    "mb10_fine.csv",
 ]))
 CIE_REF_DICT = {idx:fp for idx, fp in enumerate(CIE_LIST)}
 
@@ -41,6 +53,15 @@ def load_cie_reference(ref:Literal["1931", "2006"]="2006", deg:Literal["2","10"]
     df = _load(CIE_REF_DICT[idx])
         
     return df
+
+def load_checkers(idx:Optional[int]=None):
+    if idx is None:
+        idx = 0
+    
+    _load = lambda fp: pd.read_csv(fp, sep="\t")
+    df = _load(CHECKERS_REF_DICT[idx])       
+    return df
+
 
 def demo_data() -> pd.DataFrame:
     df = pd.read_csv("data\\demo\\argon_demo.csv", index_col=0)

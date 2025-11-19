@@ -2,6 +2,8 @@ http://www.cvrl.org/database/text/intros/introcmfs.htm
 http://www.cvrl.org/cmfs.htm
 http://www.cvrl.org/
 
+https://onlinelibrary.wiley.com/doi/full/10.1002/col.22940
+
 # lin2012xyz2e
 
 Meta data copied directly: http://www.cvrl.org/database/text/cienewxyz/cie2012xyz2.htm

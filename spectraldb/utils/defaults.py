@@ -4,6 +4,7 @@ LRU_CACHE_SIZE = 512
 THIS_DIR = os.path.dirname(__file__)
 SPECTRALDB_ABS_PATH = os.path.sep.join(THIS_DIR.split(os.path.sep)[:-2])
 SPECTRALDB_SRC_ABS_PATH = os.path.sep.join(THIS_DIR.split(os.path.sep)[:-1])
+CHECKERS_BASE_PATH = os.path.sep.join([SPECTRALDB_ABS_PATH, "data", "checkers"])
 CIE_BASE_PATH = os.path.sep.join([SPECTRALDB_ABS_PATH, "data", "CIE"])
 RAW_LINES_PATH = os.path.sep.join([SPECTRALDB_ABS_PATH, "data", "raw", "lines","wavelength"])
 PERIODIC_JSON_PATH = os.path.sep.join([SPECTRALDB_ABS_PATH, "data", "periodic_table", "PeriodicTableJSON.json"])
