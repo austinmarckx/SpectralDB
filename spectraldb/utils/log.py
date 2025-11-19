@@ -27,7 +27,7 @@ class Log:
         level = f"[{cls.parse_level(lvl, 'str')}]" 
         time = cls.get_time() if time else "now"
         suffix = " "
-        return ":".join([time, lvl, suffix])
+        return ":".join([time, level, suffix])
 
     @classmethod
     def parse_level(cls, lvl:LogLevel, out:Literal["int", "str"]="int"):

@@ -117,9 +117,13 @@ class WorkingSpace(NamedTuple):
     ill:NamedIlluminant
     M:np.ndarray
     M_inv:np.ndarray
-    r_xyY:Optional[float]=None
-    g_xyY:Optional[float]=None
-    b_xyY:Optional[float]=None
+    r_xyY:Optional[CIE_xyY]=None
+    g_xyY:Optional[CIE_xyY]=None
+    b_xyY:Optional[CIE_xyY]=None
+    gamma:Optional[float]=1.
+
+    def primaries(self) -> tuple[CIE_xyY, CIE_xyY, CIE_xyY]:
+        return self.r_xyY, self.g_xyY, self.b_xyY
 
 class ChromaticAdaptation(NamedTuple):
     """ """

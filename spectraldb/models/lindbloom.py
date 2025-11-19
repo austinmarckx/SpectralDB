@@ -25,6 +25,7 @@ Adobe_RGB_1998 = {
     "r_xyY":CIE_xyY(x=0.6400, y=0.3300, Y=0.297361),
     "g_xyY":CIE_xyY(x=0.2100, y=0.7100, Y=0.627355),
     "b_xyY":CIE_xyY(x=0.1500, y=0.0600, Y=0.075285),
+    "gamma":2.2,
 }
 AppleRGB = {
     "name":"AppleRGB",
@@ -42,7 +43,7 @@ AppleRGB = {
     "r_xyY":CIE_xyY(x=0.6250, y=0.3400, Y=0.244634),
     "g_xyY":CIE_xyY(x=0.2800, y=0.5950, Y=0.672034),
     "b_xyY":CIE_xyY(x=0.1550, y=0.0700, Y=0.083332),
-    
+    "gamma":1.8,
 }
 Best_RGB = {
     "name":"Best_RGB",
@@ -60,6 +61,7 @@ Best_RGB = {
     "r_xyY":CIE_xyY(x=0.7347, y=0.2653, Y=0.228457),
     "g_xyY":CIE_xyY(x=0.2150, y=0.7750, Y=0.737352),
     "b_xyY":CIE_xyY(x=0.1300, y=0.0350, Y=0.034191),
+    "gamma":2.2,
 }
 Beta_RGB = {								
     "name":"Beta_RGB",
@@ -77,6 +79,7 @@ Beta_RGB = {
     "r_xyY":CIE_xyY(x=0.6888, y=0.3112, Y=0.303273),
     "g_xyY":CIE_xyY(x=0.1986, y=0.7551, Y=0.663786),
     "b_xyY":CIE_xyY(x=0.1265, y=0.0352, Y=0.032941),
+    "gamma":2.2,
 }
 Bruce_RGB = {								
     "name":"Bruce_RGB",
@@ -94,6 +97,7 @@ Bruce_RGB = {
     "r_xyY":CIE_xyY(x=0.6400, y=0.3300, Y=0.240995),
     "g_xyY":CIE_xyY(x=0.2800, y=0.6500, Y=0.683554),
     "b_xyY":CIE_xyY(x=0.1500, y=0.0600, Y=0.075452),
+    "gamma":2.2,
 }
 CIE_RGB = {
     "name":"CIE_RGB",
@@ -111,6 +115,7 @@ CIE_RGB = {
     "r_xyY":CIE_xyY(x=0.7350, y=0.2650, Y=0.176204),
     "g_xyY":CIE_xyY(x=0.2740, y=0.7170, Y=0.812985),
     "b_xyY":CIE_xyY(x=0.1670, y=0.0090, Y=0.010811),
+    "gamma":2.2,
 }
 ColorMatch_RGB = {
     "name":"ColorMatch_RGB",
@@ -128,6 +133,7 @@ ColorMatch_RGB = {
     "r_xyY":CIE_xyY(x=0.6300, y=0.3400, Y=0.274884),
     "g_xyY":CIE_xyY(x=0.2950, y=0.6050, Y=0.658132),
     "b_xyY":CIE_xyY(x=0.1500, y=0.0750, Y=0.066985),
+    "gamma":1.8,
 }									
 Don_RGB_4 = {
     "name":"Don_RGB_4",
@@ -145,6 +151,7 @@ Don_RGB_4 = {
     "r_xyY":CIE_xyY(x=0.6960, y=0.3000, Y=0.278350),
     "g_xyY":CIE_xyY(x=0.2150, y=0.7650, Y=0.687970),
     "b_xyY":CIE_xyY(x=0.1300, y=0.0350, Y=0.033680),
+    "gamma":2.2,
 } 								
 ECI_RGB = {
     "name":"ECI_RGB",
@@ -179,6 +186,7 @@ Ekta_Space_PS5 = {
     "r_xyY":CIE_xyY(x=0.6950, y=0.3050, Y=0.260629),
     "g_xyY":CIE_xyY(x=0.2600, y=0.7000, Y=0.734946),
     "b_xyY":CIE_xyY(x=0.1100, y=0.0050, Y=0.004425),
+    "gamma":2.2,
 }								
 NTSC_RGB = {
     "name":"NTSC_RGB",
@@ -196,6 +204,7 @@ NTSC_RGB = {
     "r_xyY":CIE_xyY(x=0.6700, y=0.3300, Y=0.298839),
     "g_xyY":CIE_xyY(x=0.2100, y=0.7100, Y=0.586811),
     "b_xyY":CIE_xyY(x=0.1400, y=0.0800, Y=0.114350),
+    "gamma":2.2,
 } 								
 PAL_SECAM_RGB = {
     "name":"PAL_SECAM_RGB",
@@ -213,6 +222,7 @@ PAL_SECAM_RGB = {
     "r_xyY":CIE_xyY(x=0.6400, y=0.3300, Y=0.222021),
     "g_xyY":CIE_xyY(x=0.2900, y=0.6000, Y=0.706645),
     "b_xyY":CIE_xyY(x=0.1500, y=0.0600, Y=0.071334),
+    "gamma":2.2,
 } 								
 ProPhoto_RGB = {
     "name":"ProPhoto_RGB",
@@ -230,6 +240,7 @@ ProPhoto_RGB = {
     "r_xyY":CIE_xyY(x=0.7347, y=0.2653, Y=0.288040),
     "g_xyY":CIE_xyY(x=0.1596, y=0.8404, Y=0.711874),
     "b_xyY":CIE_xyY(x=0.0366, y=0.0001, Y=0.000086),
+    "gamma":1.8,
 }						
 SMPTE_C_RGB = {
     "name":"SMPTE_C_RGB",
@@ -247,6 +258,7 @@ SMPTE_C_RGB = {
     "r_xyY":CIE_xyY(x=0.6300, y=0.3400, Y=0.212395),
     "g_xyY":CIE_xyY(x=0.3100, y=0.5950, Y=0.701049),
     "b_xyY":CIE_xyY(x=0.1550, y=0.0700, Y=0.086556),
+    "gamma":2.2,
 } 								
 sRGB = {
     "name":"sRGB",
@@ -264,6 +276,7 @@ sRGB = {
     "r_xyY":CIE_xyY(x=0.6400, y=0.3300, Y=0.212656),
     "g_xyY":CIE_xyY(x=0.3000, y=0.6000, Y=0.715158),
     "b_xyY":CIE_xyY(x=0.1500, y=0.0600, Y=0.072186),
+    "gamma":2.2,
 }	
 Wide_Gamut_RGB = {
     "name":"Wide_Gamut_RGB",
@@ -281,6 +294,7 @@ Wide_Gamut_RGB = {
     "r_xyY":CIE_xyY(x=0.7350, y=0.2650, Y=0.258187),
     "g_xyY":CIE_xyY(x=0.1150, y=0.8260, Y=0.724938),
     "b_xyY":CIE_xyY(x=0.1570, y=0.0180, Y=0.016875),
+    "gamma":2.2,
 } 								
 
 WORKING_SPACES_LIST = [
@@ -295,15 +309,17 @@ def create_working_space(name:str, red:CIE_xyY, green:CIE_xyY, blue:CIE_xyY, ill
     if not isinstance(ill, Illuminant):
         ill = get_illuminant(ill)
     
-    def _parse_xyY(xyY) -> tuple[float, float, float]:
-        x = xyY.x / xyY.y if xyY.y else 0.
-        y = 1
-        z = xyY.z() / xyY.y if xyY.y else 0.
+    def _xyY_to_XYZ(xyY:CIE_xyY) -> tuple[float, float, float]:
+        if xyY.y == 0:
+            return 0, 0, 0
+        x = (xyY.Y*xyY.x)/xyY.y
+        y = xyY.Y
+        z = (xyY.Y*xyY.z())/xyY.y
         return x, y, z
     
-    xr, yr, zr = _parse_xyY(red)
-    xg, yg, zg = _parse_xyY(green)
-    xb, yb, zb = _parse_xyY(blue)
+    xr, yr, zr = _xyY_to_XYZ(red)
+    xg, yg, zg = _xyY_to_XYZ(green)
+    xb, yb, zb = _xyY_to_XYZ(blue)
 
     mat = np.array([
         [xr, xg, xb],
