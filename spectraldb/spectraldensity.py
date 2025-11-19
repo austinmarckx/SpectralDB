@@ -127,8 +127,6 @@ def heatmap(
         data += list(map(func, el))
         labs += list(map(get_element_name, el))
     
-    print(data)
-    
     fig = go.Figure()
     
     fig.add_trace(go.Heatmap(
