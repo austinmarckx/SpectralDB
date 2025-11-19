@@ -56,7 +56,7 @@ def get_adaptation(adapt:Adaptation):
     except:
         raise ValueError(f"{adapt} is not a recognized chromatic adaptation")
     
-def adapt(source:CIE_XYZ, dest_ill:NamedIlluminant,  adaptation:Union[Adaptation, ChromaticAdaptation]="xyz_scaling", src_ill:NamedIlluminant="E",) -> CIE_XYZ:
+def adaptation_matrix(src_ill:NamedIlluminant, dest_ill:NamedIlluminant, adaptation:Union[Adaptation, ChromaticAdaptation]="xyz_scaling") -> np.ndarray:
     if isinstance(adaptation, str):
         A = get_adaptation(adaptation)    
     if isinstance(src_ill, str):
@@ -68,6 +68,9 @@ def adapt(source:CIE_XYZ, dest_ill:NamedIlluminant,  adaptation:Union[Adaptation
     dest_ill_cone_resp = A.M @ dest_ill.to_numpy()
     ratios = np.identity(3) * (dest_ill_cone_resp / src_ill_cone_resp)
     M = A.M_inv @ ratios @ A.M
+    return M
 
+def adapt(source:CIE_XYZ, dest_ill:NamedIlluminant,  adaptation:Union[Adaptation, ChromaticAdaptation]="xyz_scaling", src_ill:NamedIlluminant="E",) -> CIE_XYZ:
+    M = adaptation_matrix(src_ill, dest_ill, adaptation)
     dest = M @ source.to_numpy()
     return CIE_XYZ(x=dest[0], y=dest[1], z=dest[2], deg=source.deg)

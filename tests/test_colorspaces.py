@@ -26,7 +26,6 @@ class TestColorspaces(ut.TestCase):
         tests = [{"name":f"Test {name}", "inputs":{"kwargs":{"ws":name}}} for name in WORKING_SPACES_DICT]               
         return  list(map(TestTuple.make, tests))
 
-
     def test_create_working_spaces(self):
         tests = self._create_working_spaces_conditions()
         

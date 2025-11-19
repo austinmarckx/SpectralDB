@@ -310,6 +310,7 @@ def create_working_space(name:str, red:CIE_xyY, green:CIE_xyY, blue:CIE_xyY, ill
         ill = get_illuminant(ill)
     
     def _xyY_to_XYZ(xyY:CIE_xyY) -> tuple[float, float, float]:
+        """ Should Y = 1.0 by default?? """
         if xyY.y == 0:
             return 0, 0, 0
         x = (xyY.Y*xyY.x)/xyY.y
